@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Affordability Calculator - Buy vs Build</title>
+    <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #2563eb;
+    --secondary-color: #1e40af;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --bg-color: #f8fafc;
+    --card-bg: #ffffff;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --border-color: #e2e8f0;
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--text-primary);
+    line-height: 1.6;
+    padding: 2rem 1rem;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.calculator-wrapper {
+    padding: 2rem;
+}
+
+.tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    overflow-x: auto;
+}
+
+.tab {
+    padding: 1rem 1.5rem;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.tab:hover {
+    color: var(--primary-color);
+    background: rgba(37, 99, 235, 0.05);
+}
+
+.tab.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+h2 {
+    font-size: 1.8rem;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+}
+
+h3 {
+    font-size: 1.3rem;
+    color: var(--text-primary);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+h3::before {
+    content: '';
+    width: 4px;
+    height: 1.3rem;
+    background: var(--primary-color);
+    margin-right: 0.5rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.form-group small {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.form-group input,
+.form-group select {
+    padding: 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    padding: 2rem;
+    justify-content: center;
+    background: var(--bg-color);
+}
+
+.btn {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+}
+
+.btn-calculate {
+    background: var(--primary-color);
+    color: white;
+    min-width: 200px;
+}
+
+.btn-calculate:hover {
+    background: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-reset {
+    background: white;
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+.btn-reset:hover {
+    border-color: var(--text-secondary);
+    transform: translateY(-2px);
+}
+
+.comparison-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.result-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 2px solid var(--border-color);
+}
+
+.result-card h3 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.build-card {
+    border-color: var(--primary-color);
+}
+
+.build-card h3 {
+    color: var(--primary-color);
+}
+
+.buy-card {
+    border-color: var(--success-color);
+}
+
+.buy-card h3 {
+    color: var(--success-color);
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.result-item:last-child {
+    border-bottom: none;
+}
+
+.result-item .label {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.result-item .value {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.breakdown-section,
+.affordability-section,
+.recommendation-section,
+.timeline-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: var(--bg-color);
+    border-radius: 12px;
+}
+
+#build-breakdown {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.breakdown-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 6px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.breakdown-item.highlight {
+    background: #fef3c7;
+    border-left-color: var(--warning-color);
+}
+
+.affordability-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.affordability-item {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    border: 2px solid var(--border-color);
+}
+
+.affordability-item .label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.affordability-item .value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.recommendation-box {
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    border-left: 4px solid var(--success-color);
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+.recommendation-box.warning {
+    border-left-color: var(--warning-color);
+    background: #fffbeb;
+}
+
+.recommendation-box.danger {
+    border-left-color: var(--danger-color);
+    background: #fef2f2;
+}
+
+#timeline-chart {
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+}
+
+.timeline-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.timeline-label {
+    min-width: 100px;
+    font-weight: 500;
+}
+
+.timeline-bar-container {
+    flex: 1;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.timeline-bar {
+    height: 40px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.timeline-bar:hover {
+    transform: scaleY(1.1);
+}
+
+.timeline-bar.build {
+    background: var(--primary-color);
+}
+
+.timeline-bar.buy {
+    background: var(--success-color);
+}
+
+footer {
+    padding: 1.5rem 2rem;
+    background: var(--bg-color);
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    border-top: 1px solid var(--border-color);
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 1rem 0.5rem;
+    }
+
+    header h1 {
+        font-size: 1.8rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .calculator-wrapper {
+        padding: 1rem;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .comparison-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .tabs {
+        gap: 0.25rem;
+    }
+
+    .tab {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Home Affordability Calculator</h1>
+            <p class="subtitle">Compare buying an existing home vs. building your dream home</p>
+        </header>
+
+        <div class="calculator-wrapper">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('personal')">Personal Finances</button>
+                <button class="tab" onclick="switchTab('build')">Build Costs</button>
+                <button class="tab" onclick="switchTab('buy')">Buy Option</button>
+                <button class="tab" onclick="switchTab('results')">Results</button>
+            </div>
+
+            <div id="personal-tab" class="tab-content active">
+                <h2>Your Financial Profile</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="annual-income">Annual Household Income</label>
+                        <input type="number" id="annual-income" value="150000" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="down-payment">Available Down Payment</label>
+                        <input type="number" id="down-payment" value="100000" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="monthly-debts">Monthly Debt Payments</label>
+                        <input type="number" id="monthly-debts" value="500" min="0" step="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="credit-score">Credit Score</label>
+                        <select id="credit-score">
+                            <option value="760">Excellent (760+)</option>
+                            <option value="700">Good (700-759)</option>
+                            <option value="660">Fair (660-699)</option>
+                            <option value="620">Poor (620-659)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="interest-rate">Mortgage Interest Rate (%)</label>
+                        <input type="number" id="interest-rate" value="7.0" min="0" max="20" step="0.125">
+                    </div>
+                    <div class="form-group">
+                        <label for="loan-term">Loan Term (years)</label>
+                        <select id="loan-term">
+                            <option value="15">15 years</option>
+                            <option value="30" selected>30 years</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="build-tab" class="tab-content">
+                <h2>Building Cost Details</h2>
+
+                <h3>Land Acquisition</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="land-cost">Land Purchase Price</label>
+                        <input type="number" id="land-cost" value="150000" min="0" step="5000">
+                    </div>
+                    <div class="form-group">
+                        <label for="land-down-payment">Land Down Payment (%)</label>
+                        <input type="number" id="land-down-payment" value="20" min="0" max="100" step="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="land-loan-rate">Land Loan Interest Rate (%)</label>
+                        <input type="number" id="land-loan-rate" value="8.0" min="0" max="20" step="0.125">
+                    </div>
+                </div>
+
+                <h3>Construction Costs</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="home-size">Home Size (sq ft)</label>
+                        <input type="number" id="home-size" value="2500" min="500" step="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="cost-per-sqft">Cost per Sq Ft</label>
+                        <input type="number" id="cost-per-sqft" value="200" min="50" step="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="construction-loan-rate">Construction Loan Rate (%)</label>
+                        <input type="number" id="construction-loan-rate" value="9.0" min="0" max="20" step="0.125">
+                    </div>
+                    <div class="form-group">
+                        <label for="construction-months">Construction Timeline (months)</label>
+                        <input type="number" id="construction-months" value="12" min="1" max="36" step="1">
+                    </div>
+                </div>
+
+                <h3>Professional Fees & Soft Costs</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="architect-fee">Architect Fee (% of construction)</label>
+                        <input type="number" id="architect-fee" value="10" min="0" max="20" step="0.5">
+                    </div>
+                    <div class="form-group">
+                        <label for="engineering-fee">Engineering Fees</label>
+                        <input type="number" id="engineering-fee" value="15000" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="lighting-design">Lighting Design</label>
+                        <input type="number" id="lighting-design" value="5000" min="0" step="500">
+                    </div>
+                    <div class="form-group">
+                        <label for="interior-design">Interior Design</label>
+                        <input type="number" id="interior-design" value="10000" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="landscape-design">Landscape Design</label>
+                        <input type="number" id="landscape-design" value="8000" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="other-consultants">Other Consultants</label>
+                        <input type="number" id="other-consultants" value="5000" min="0" step="1000">
+                    </div>
+                </div>
+
+                <h3>Permitting & Development</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="permitting-costs">Permitting & Approvals</label>
+                        <input type="number" id="permitting-costs" value="10000" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="land-development">Land Development Costs</label>
+                        <input type="number" id="land-development" value="50000" min="0" step="5000">
+                        <small>Grading, utilities, driveway, etc.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="impact-fees">Impact Fees</label>
+                        <input type="number" id="impact-fees" value="15000" min="0" step="1000">
+                    </div>
+                </div>
+
+                <h3>General Contractor & Contingency</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="gc-fee">GC Fee (% of construction)</label>
+                        <input type="number" id="gc-fee" value="15" min="0" max="30" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="contingency">Contingency (% of total)</label>
+                        <input type="number" id="contingency" value="10" min="0" max="25" step="1">
+                    </div>
+                </div>
+
+                <h3>Carry Costs During Construction</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="property-taxes-annual">Annual Property Tax (land)</label>
+                        <input type="number" id="property-taxes-annual" value="3000" min="0" step="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="insurance-during">Insurance During Construction</label>
+                        <input type="number" id="insurance-during" value="5000" min="0" step="500">
+                    </div>
+                    <div class="form-group">
+                        <label for="current-rent">Current Monthly Rent/Housing</label>
+                        <input type="number" id="current-rent" value="2500" min="0" step="100">
+                    </div>
+                </div>
+            </div>
+
+            <div id="buy-tab" class="tab-content">
+                <h2>Buying an Existing Home</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="buy-price">Purchase Price</label>
+                        <input type="number" id="buy-price" value="600000" min="0" step="10000">
+                    </div>
+                    <div class="form-group">
+                        <label for="buy-size">Home Size (sq ft)</label>
+                        <input type="number" id="buy-size" value="2500" min="500" step="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="closing-costs">Closing Costs (%)</label>
+                        <input type="number" id="closing-costs" value="3" min="0" max="10" step="0.5">
+                    </div>
+                    <div class="form-group">
+                        <label for="renovation-costs">Immediate Renovation Costs</label>
+                        <input type="number" id="renovation-costs" value="50000" min="0" step="5000">
+                    </div>
+                    <div class="form-group">
+                        <label for="buy-property-tax-rate">Annual Property Tax Rate (%)</label>
+                        <input type="number" id="buy-property-tax-rate" value="1.2" min="0" max="5" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="buy-insurance-annual">Annual Insurance</label>
+                        <input type="number" id="buy-insurance-annual" value="2400" min="0" step="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="buy-hoa">Monthly HOA Fees</label>
+                        <input type="number" id="buy-hoa" value="0" min="0" step="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="buy-maintenance">Annual Maintenance (% of value)</label>
+                        <input type="number" id="buy-maintenance" value="1" min="0" max="5" step="0.1">
+                    </div>
+                </div>
+            </div>
+
+            <div id="results-tab" class="tab-content">
+                <h2>Analysis & Comparison</h2>
+
+                <div class="comparison-cards">
+                    <div class="result-card build-card">
+                        <h3>Build Option</h3>
+                        <div class="result-item">
+                            <span class="label">Total Project Cost:</span>
+                            <span class="value" id="build-total-cost">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Down Payment Needed:</span>
+                            <span class="value" id="build-down-needed">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Loan Amount:</span>
+                            <span class="value" id="build-loan-amount">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Monthly Payment (P&I):</span>
+                            <span class="value" id="build-monthly-pi">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Cost per Sq Ft:</span>
+                            <span class="value" id="build-cost-sqft">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Construction Carry Costs:</span>
+                            <span class="value" id="build-carry-costs">$0</span>
+                        </div>
+                    </div>
+
+                    <div class="result-card buy-card">
+                        <h3>Buy Option</h3>
+                        <div class="result-item">
+                            <span class="label">Total Purchase Cost:</span>
+                            <span class="value" id="buy-total-cost">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Down Payment Needed:</span>
+                            <span class="value" id="buy-down-needed">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Loan Amount:</span>
+                            <span class="value" id="buy-loan-amount">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Monthly Payment (P&I):</span>
+                            <span class="value" id="buy-monthly-pi">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Cost per Sq Ft:</span>
+                            <span class="value" id="buy-cost-sqft">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">First Year Total Costs:</span>
+                            <span class="value" id="buy-first-year">$0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="breakdown-section">
+                    <h3>Build Cost Breakdown</h3>
+                    <div id="build-breakdown"></div>
+                </div>
+
+                <div class="affordability-section">
+                    <h3>Affordability Analysis</h3>
+                    <div class="affordability-grid">
+                        <div class="affordability-item">
+                            <span class="label">Maximum Affordable Home (Build):</span>
+                            <span class="value" id="max-affordable-build">$0</span>
+                        </div>
+                        <div class="affordability-item">
+                            <span class="label">Maximum Affordable Home (Buy):</span>
+                            <span class="value" id="max-affordable-buy">$0</span>
+                        </div>
+                        <div class="affordability-item">
+                            <span class="label">Debt-to-Income Ratio (Build):</span>
+                            <span class="value" id="dti-build">0%</span>
+                        </div>
+                        <div class="affordability-item">
+                            <span class="label">Debt-to-Income Ratio (Buy):</span>
+                            <span class="value" id="dti-buy">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recommendation-section">
+                    <h3>Recommendation</h3>
+                    <div id="recommendation" class="recommendation-box"></div>
+                </div>
+
+                <div class="timeline-section">
+                    <h3>5-Year Cost Comparison</h3>
+                    <div id="timeline-chart"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-calculate" onclick="calculate()">Calculate</button>
+            <button class="btn btn-reset" onclick="resetForm()">Reset to Defaults</button>
+        </div>
+
+        <footer>
+            <p>This calculator provides estimates for comparison purposes only. Consult with financial and construction professionals for accurate project planning.</p>
+        </footer>
+    </div>
+
+    <script>
+function switchTab(tabName) {
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    tabContents.forEach(content => content.classList.remove('active'));
+    const activeTab = Array.from(tabs).find(tab => tab.textContent.toLowerCase().includes(tabName));
+    if (activeTab) activeTab.classList.add('active');
+    document.getElementById(`${tabName}-tab`).classList.add('active');
+}
+
+function getVal(id) {
+    return parseFloat(document.getElementById(id).value) || 0;
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(amount);
+}
+
+function formatPercent(value) {
+    return `${value.toFixed(2)}%`;
+}
+
+function setVal(id, value) {
+    const element = document.getElementById(id);
+    if (element) {
+        element.textContent = typeof value === 'number' ? formatCurrency(value) : value;
+    }
+}
+
+function calculateMonthlyPayment(principal, annualRate, years) {
+    if (principal <= 0 || annualRate <= 0) return 0;
+    const monthlyRate = annualRate / 100 / 12;
+    const numPayments = years * 12;
+    const monthlyPayment = principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+    return monthlyPayment;
+}
+
+function calculateConstructionInterest(principal, annualRate, months) {
+    const avgBalance = principal / 2;
+    const monthlyRate = annualRate / 100 / 12;
+    return avgBalance * monthlyRate * months;
+}
+
+function calculateBuildCosts() {
+    const data = {
+        income: getVal('annual-income'),
+        downPayment: getVal('down-payment'),
+        monthlyDebts: getVal('monthly-debts'),
+        interestRate: getVal('interest-rate'),
+        loanTerm: getVal('loan-term'),
+        landCost: getVal('land-cost'),
+        landDownPercent: getVal('land-down-payment'),
+        landLoanRate: getVal('land-loan-rate'),
+        homeSize: getVal('home-size'),
+        costPerSqft: getVal('cost-per-sqft'),
+        constructionLoanRate: getVal('construction-loan-rate'),
+        constructionMonths: getVal('construction-months'),
+        architectFeePercent: getVal('architect-fee'),
+        engineeringFee: getVal('engineering-fee'),
+        lightingDesign: getVal('lighting-design'),
+        interiorDesign: getVal('interior-design'),
+        landscapeDesign: getVal('landscape-design'),
+        otherConsultants: getVal('other-consultants'),
+        permittingCosts: getVal('permitting-costs'),
+        landDevelopment: getVal('land-development'),
+        impactFees: getVal('impact-fees'),
+        gcFeePercent: getVal('gc-fee'),
+        contingencyPercent: getVal('contingency'),
+        propertyTaxAnnual: getVal('property-taxes-annual'),
+        insuranceDuring: getVal('insurance-during'),
+        currentRent: getVal('current-rent')
+    };
+
+    const baseConstructionCost = data.homeSize * data.costPerSqft;
+    const architectFee = baseConstructionCost * (data.architectFeePercent / 100);
+    const gcFee = baseConstructionCost * (data.gcFeePercent / 100);
+    const totalSoftCosts = architectFee + data.engineeringFee + data.lightingDesign + data.interiorDesign + data.landscapeDesign + data.otherConsultants;
+    const totalHardCosts = baseConstructionCost + gcFee;
+    const totalDevelopmentCosts = data.permittingCosts + data.landDevelopment + data.impactFees;
+    const subtotal = data.landCost + totalHardCosts + totalSoftCosts + totalDevelopmentCosts;
+    const contingency = subtotal * (data.contingencyPercent / 100);
+    const totalProjectCost = subtotal + contingency;
+    const constructionLoanAmount = totalHardCosts + totalSoftCosts + totalDevelopmentCosts + contingency;
+    const constructionInterest = calculateConstructionInterest(constructionLoanAmount, data.constructionLoanRate, data.constructionMonths);
+    const propertyTaxDuringConstruction = (data.propertyTaxAnnual / 12) * data.constructionMonths;
+    const rentDuringConstruction = data.currentRent * data.constructionMonths;
+    const totalCarryCosts = constructionInterest + propertyTaxDuringConstruction + data.insuranceDuring + rentDuringConstruction;
+    const totalCostWithCarry = totalProjectCost + totalCarryCosts;
+    const landDownPayment = data.landCost * (data.landDownPercent / 100);
+    const landLoanAmount = data.landCost - landDownPayment;
+    const finalLoanAmount = totalProjectCost - data.downPayment;
+    const monthlyPI = calculateMonthlyPayment(finalLoanAmount, data.interestRate, data.loanTerm);
+    const costPerSqft = totalProjectCost / data.homeSize;
+
+    return {
+        totalProjectCost,
+        totalCostWithCarry,
+        downPaymentNeeded: data.downPayment,
+        landCost: data.landCost,
+        baseConstructionCost,
+        architectFee,
+        gcFee,
+        totalSoftCosts,
+        totalHardCosts,
+        totalDevelopmentCosts,
+        contingency,
+        constructionInterest,
+        totalCarryCosts,
+        finalLoanAmount,
+        monthlyPI,
+        costPerSqft,
+        breakdown: {
+            'Land Acquisition': data.landCost,
+            'Base Construction': baseConstructionCost,
+            'Architect Fees': architectFee,
+            'GC Fees': gcFee,
+            'Engineering': data.engineeringFee,
+            'Lighting Design': data.lightingDesign,
+            'Interior Design': data.interiorDesign,
+            'Landscape Design': data.landscapeDesign,
+            'Other Consultants': data.otherConsultants,
+            'Permitting': data.permittingCosts,
+            'Land Development': data.landDevelopment,
+            'Impact Fees': data.impactFees,
+            'Contingency': contingency,
+            'Construction Loan Interest': constructionInterest,
+            'Property Tax (During Construction)': propertyTaxDuringConstruction,
+            'Insurance (During Construction)': data.insuranceDuring,
+            'Housing During Construction': rentDuringConstruction
+        }
+    };
+}
+
+function calculateBuyCosts() {
+    const data = {
+        income: getVal('annual-income'),
+        downPayment: getVal('down-payment'),
+        monthlyDebts: getVal('monthly-debts'),
+        interestRate: getVal('interest-rate'),
+        loanTerm: getVal('loan-term'),
+        buyPrice: getVal('buy-price'),
+        buySize: getVal('buy-size'),
+        closingCostsPercent: getVal('closing-costs'),
+        renovationCosts: getVal('renovation-costs'),
+        propertyTaxRate: getVal('buy-property-tax-rate'),
+        insuranceAnnual: getVal('buy-insurance-annual'),
+        hoaMonthly: getVal('buy-hoa'),
+        maintenancePercent: getVal('buy-maintenance')
+    };
+
+    const closingCosts = data.buyPrice * (data.closingCostsPercent / 100);
+    const totalPurchaseCost = data.buyPrice + closingCosts + data.renovationCosts;
+    const loanAmount = data.buyPrice - data.downPayment;
+    const monthlyPI = calculateMonthlyPayment(loanAmount, data.interestRate, data.loanTerm);
+    const propertyTaxAnnual = data.buyPrice * (data.propertyTaxRate / 100);
+    const maintenanceAnnual = data.buyPrice * (data.maintenancePercent / 100);
+    const propertyTaxMonthly = propertyTaxAnnual / 12;
+    const insuranceMonthly = data.insuranceAnnual / 12;
+    const maintenanceMonthly = maintenanceAnnual / 12;
+    const totalMonthlyPayment = monthlyPI + propertyTaxMonthly + insuranceMonthly + data.hoaMonthly + maintenanceMonthly;
+    const firstYearCosts = (monthlyPI * 12) + propertyTaxAnnual + data.insuranceAnnual + (data.hoaMonthly * 12) + maintenanceAnnual + closingCosts + data.renovationCosts;
+    const costPerSqft = totalPurchaseCost / data.buySize;
+
+    return {
+        totalPurchaseCost,
+        downPaymentNeeded: data.downPayment,
+        loanAmount,
+        monthlyPI,
+        closingCosts,
+        propertyTaxAnnual,
+        insuranceAnnual: data.insuranceAnnual,
+        hoaMonthly: data.hoaMonthly,
+        maintenanceAnnual,
+        totalMonthlyPayment,
+        firstYearCosts,
+        costPerSqft
+    };
+}
+
+function calculateAffordability() {
+    const income = getVal('annual-income');
+    const monthlyDebts = getVal('monthly-debts');
+    const downPayment = getVal('down-payment');
+    const interestRate = getVal('interest-rate');
+    const loanTerm = getVal('loan-term');
+    const monthlyIncome = income / 12;
+    const maxHousingPayment = monthlyIncome * 0.28;
+    const maxTotalDebt = monthlyIncome * 0.36;
+    const maxHousingWithDebts = maxTotalDebt - monthlyDebts;
+    const maxMonthlyPayment = Math.min(maxHousingPayment, maxHousingWithDebts);
+    const monthlyRate = interestRate / 100 / 12;
+    const numPayments = loanTerm * 12;
+    const maxLoan = maxMonthlyPayment * (Math.pow(1 + monthlyRate, numPayments) - 1) / (monthlyRate * Math.pow(1 + monthlyRate, numPayments));
+    const maxHomePrice = maxLoan + downPayment;
+
+    return { maxHomePrice, maxMonthlyPayment, maxHousingPayment, maxHousingWithDebts };
+}
+
+function calculateDTI(monthlyHousingPayment) {
+    const monthlyIncome = getVal('annual-income') / 12;
+    const monthlyDebts = getVal('monthly-debts');
+    const totalMonthlyDebt = monthlyHousingPayment + monthlyDebts;
+    return (totalMonthlyDebt / monthlyIncome) * 100;
+}
+
+function generateRecommendation(buildResults, buyResults, affordability) {
+    const recommendations = [];
+    const buildDTI = calculateDTI(buildResults.monthlyPI);
+    const buyDTI = calculateDTI(buyResults.totalMonthlyPayment);
+
+    if (buildResults.totalProjectCost > affordability.maxHomePrice) {
+        recommendations.push(`⚠️ <strong>Build option exceeds affordable range</strong> by ${formatCurrency(buildResults.totalProjectCost - affordability.maxHomePrice)}. Consider reducing scope or increasing down payment.`);
+    }
+    if (buyResults.totalPurchaseCost > affordability.maxHomePrice) {
+        recommendations.push(`⚠️ <strong>Buy option exceeds affordable range</strong> by ${formatCurrency(buyResults.totalPurchaseCost - affordability.maxHomePrice)}. Consider a lower-priced home.`);
+    }
+    if (buildDTI > 43) {
+        recommendations.push(`⚠️ Build option DTI of ${formatPercent(buildDTI)} exceeds recommended maximum of 43%. May be difficult to qualify for financing.`);
+    }
+    if (buyDTI > 43) {
+        recommendations.push(`⚠️ Buy option DTI of ${formatPercent(buyDTI)} exceeds recommended maximum of 43%. May be difficult to qualify for financing.`);
+    }
+
+    const costDifference = buildResults.costPerSqft - buyResults.costPerSqft;
+    if (Math.abs(costDifference) > 50) {
+        if (costDifference > 0) {
+            recommendations.push(`💰 Building costs ${formatCurrency(costDifference)} more per sq ft than buying. Consider if customization is worth the premium.`);
+        } else {
+            recommendations.push(`💰 Building costs ${formatCurrency(Math.abs(costDifference))} less per sq ft than buying. Good value for new construction!`);
+        }
+    }
+
+    const totalCostDiff = buildResults.totalCostWithCarry - buyResults.firstYearCosts;
+    if (totalCostDiff < 0) {
+        recommendations.push(`✅ <strong>Building is more cost-effective</strong> by ${formatCurrency(Math.abs(totalCostDiff))} in first year costs. You'll get a brand new, custom home for less.`);
+    } else {
+        recommendations.push(`✅ <strong>Buying is more cost-effective</strong> by ${formatCurrency(totalCostDiff)} in first year costs. You can move in immediately without construction delays.`);
+    }
+
+    recommendations.push(`📊 <strong>Long-term considerations:</strong>`);
+    recommendations.push(`• Building: New home warranty, lower maintenance costs initially, everything customized to your preferences, energy-efficient construction.`);
+    recommendations.push(`• Buying: Immediate occupancy, established neighborhood, mature landscaping, known condition (with inspection).`);
+
+    const buildAffordable = buildResults.totalProjectCost <= affordability.maxHomePrice && buildDTI <= 43;
+    const buyAffordable = buyResults.totalPurchaseCost <= affordability.maxHomePrice && buyDTI <= 43;
+
+    if (buildAffordable && !buyAffordable) {
+        recommendations.push(`<br><strong style="color: #2563eb;">Recommendation: BUILD</strong> - Building is within your budget while buying exceeds it.`);
+    } else if (buyAffordable && !buildAffordable) {
+        recommendations.push(`<br><strong style="color: #10b981;">Recommendation: BUY</strong> - Buying is within your budget while building exceeds it.`);
+    } else if (buildAffordable && buyAffordable) {
+        if (totalCostDiff < -50000) {
+            recommendations.push(`<br><strong style="color: #2563eb;">Recommendation: BUILD</strong> - Both options are affordable, but building offers better value and a custom home.`);
+        } else if (totalCostDiff > 50000) {
+            recommendations.push(`<br><strong style="color: #10b981;">Recommendation: BUY</strong> - Both options are affordable, but buying is more cost-effective and offers immediate occupancy.`);
+        } else {
+            recommendations.push(`<br><strong style="color: #f59e0b;">Recommendation: PERSONAL CHOICE</strong> - Both options are similarly affordable. Choose based on your preference for customization (build) vs. immediate occupancy (buy).`);
+        }
+    } else {
+        recommendations.push(`<br><strong style="color: #ef4444;">Warning: NEITHER OPTION IS AFFORDABLE</strong> - Both exceed your budget. Consider increasing your down payment, reducing scope, or looking at lower-priced options.`);
+    }
+
+    return recommendations.join('<br><br>');
+}
+
+function createTimelineChart(buildResults, buyResults) {
+    const chartHTML = [];
+    const buildMonthly = buildResults.monthlyPI;
+    const buyMonthly = buyResults.totalMonthlyPayment;
+    const buildAnnual = buildMonthly * 12;
+    const buyAnnual = buyMonthly * 12;
+    const buildInitial = buildResults.totalCostWithCarry;
+    const buyInitial = buyResults.firstYearCosts;
+    const maxCost = Math.max(buildInitial, buyInitial, buildAnnual, buyAnnual);
+
+    chartHTML.push(`
+        <div class="timeline-row">
+            <div class="timeline-label">Year 1</div>
+            <div class="timeline-bar-container">
+                <div class="timeline-bar build" style="width: ${(buildInitial / maxCost) * 100}%">
+                    Build: ${formatCurrency(buildInitial)}
+                </div>
+            </div>
+        </div>
+        <div class="timeline-row">
+            <div class="timeline-label"></div>
+            <div class="timeline-bar-container">
+                <div class="timeline-bar buy" style="width: ${(buyInitial / maxCost) * 100}%">
+                    Buy: ${formatCurrency(buyInitial)}
+                </div>
+            </div>
+        </div>
+    `);
+
+    for (let year = 2; year <= 5; year++) {
+        chartHTML.push(`
+            <div class="timeline-row">
+                <div class="timeline-label">Year ${year}</div>
+                <div class="timeline-bar-container">
+                    <div class="timeline-bar build" style="width: ${(buildAnnual / maxCost) * 100}%">
+                        ${formatCurrency(buildAnnual)}
+                    </div>
+                </div>
+            </div>
+            <div class="timeline-row">
+                <div class="timeline-label"></div>
+                <div class="timeline-bar-container">
+                    <div class="timeline-bar buy" style="width: ${(buyAnnual / maxCost) * 100}%">
+                        ${formatCurrency(buyAnnual)}
+                    </div>
+                </div>
+            </div>
+        `);
+    }
+
+    const buildTotal5Year = buildInitial + (buildAnnual * 4);
+    const buyTotal5Year = buyInitial + (buyAnnual * 4);
+
+    chartHTML.push(`
+        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 2px solid #e2e8f0;">
+            <div class="timeline-row">
+                <div class="timeline-label"><strong>5-Year Total</strong></div>
+                <div class="timeline-bar-container">
+                    <div class="timeline-bar build" style="width: ${(buildTotal5Year / Math.max(buildTotal5Year, buyTotal5Year)) * 100}%">
+                        ${formatCurrency(buildTotal5Year)}
+                    </div>
+                </div>
+            </div>
+            <div class="timeline-row">
+                <div class="timeline-label"></div>
+                <div class="timeline-bar-container">
+                    <div class="timeline-bar buy" style="width: ${(buyTotal5Year / Math.max(buildTotal5Year, buyTotal5Year)) * 100}%">
+                        ${formatCurrency(buyTotal5Year)}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `);
+
+    return chartHTML.join('');
+}
+
+function calculate() {
+    const buildResults = calculateBuildCosts();
+    const buyResults = calculateBuyCosts();
+    const affordability = calculateAffordability();
+
+    setVal('build-total-cost', buildResults.totalProjectCost);
+    setVal('build-down-needed', buildResults.downPaymentNeeded);
+    setVal('build-loan-amount', buildResults.finalLoanAmount);
+    setVal('build-monthly-pi', buildResults.monthlyPI);
+    setVal('build-cost-sqft', buildResults.costPerSqft);
+    setVal('build-carry-costs', buildResults.totalCarryCosts);
+
+    setVal('buy-total-cost', buyResults.totalPurchaseCost);
+    setVal('buy-down-needed', buyResults.downPaymentNeeded);
+    setVal('buy-loan-amount', buyResults.loanAmount);
+    setVal('buy-monthly-pi', buyResults.monthlyPI);
+    setVal('buy-cost-sqft', buyResults.costPerSqft);
+    setVal('buy-first-year', buyResults.firstYearCosts);
+
+    setVal('max-affordable-build', affordability.maxHomePrice);
+    setVal('max-affordable-buy', affordability.maxHomePrice);
+    setVal('dti-build', formatPercent(calculateDTI(buildResults.monthlyPI)));
+    setVal('dti-buy', formatPercent(calculateDTI(buyResults.totalMonthlyPayment)));
+
+    let breakdownHTML = '';
+    for (const [category, amount] of Object.entries(buildResults.breakdown)) {
+        const isHighlight = category.includes('Contingency') || category.includes('Interest');
+        breakdownHTML += `
+            <div class="breakdown-item ${isHighlight ? 'highlight' : ''}">
+                <span>${category}</span>
+                <span style="font-weight: 700;">${formatCurrency(amount)}</span>
+            </div>
+        `;
+    }
+    document.getElementById('build-breakdown').innerHTML = breakdownHTML;
+
+    const recommendation = generateRecommendation(buildResults, buyResults, affordability);
+    const recommendationBox = document.getElementById('recommendation');
+    recommendationBox.innerHTML = recommendation;
+
+    const buildDTI = calculateDTI(buildResults.monthlyPI);
+    const buyDTI = calculateDTI(buyResults.totalMonthlyPayment);
+    if (buildDTI > 43 || buyDTI > 43 || buildResults.totalProjectCost > affordability.maxHomePrice * 1.2 || buyResults.totalPurchaseCost > affordability.maxHomePrice * 1.2) {
+        recommendationBox.className = 'recommendation-box danger';
+    } else if (buildResults.totalProjectCost > affordability.maxHomePrice || buyResults.totalPurchaseCost > affordability.maxHomePrice) {
+        recommendationBox.className = 'recommendation-box warning';
+    } else {
+        recommendationBox.className = 'recommendation-box';
+    }
+
+    document.getElementById('timeline-chart').innerHTML = createTimelineChart(buildResults, buyResults);
+    switchTab('results');
+}
+
+function resetForm() {
+    if (confirm('Reset all values to defaults?')) {
+        location.reload();
+    }
+}
+
+window.addEventListener('load', () => {
+    calculate();
+});
+    </script>
+</body>
+</html>
