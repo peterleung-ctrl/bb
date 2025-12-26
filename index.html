@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Affordability Calculator - Buy vs Build</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Home Affordability Calculator</h1>
+            <p class="subtitle">Compare buying an existing home vs. building your dream home</p>
+        </header>
+
+        <div class="calculator-wrapper">
+            <!-- Tab Navigation -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('personal')">Personal Finances</button>
+                <button class="tab" onclick="switchTab('build')">Build Costs</button>
+                <button class="tab" onclick="switchTab('buy')">Buy Option</button>
+                <button class="tab" onclick="switchTab('results')">Results</button>
+            </div>
+
+            <!-- Personal Finances Tab -->
+            <div id="personal-tab" class="tab-content active">
+                <h2>Your Financial Profile</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="annual-income">Annual Household Income</label>
+                        <input type="number" id="annual-income" value="150000" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="down-payment">Available Down Payment</label>
+                        <input type="number" id="down-payment" value="100000" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="monthly-debts">Monthly Debt Payments</label>
+                        <input type="number" id="monthly-debts" value="500" min="0" step="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="credit-score">Credit Score</label>
+                        <select id="credit-score">
+                            <option value="760">Excellent (760+)</option>
+                            <option value="700">Good (700-759)</option>
+                            <option value="660">Fair (660-699)</option>
+                            <option value="620">Poor (620-659)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="interest-rate">Mortgage Interest Rate (%)</label>
+                        <input type="number" id="interest-rate" value="7.0" min="0" max="20" step="0.125">
+                    </div>
+                    <div class="form-group">
+                        <label for="loan-term">Loan Term (years)</label>
+                        <select id="loan-term">
+                            <option value="15">15 years</option>
+                            <option value="30" selected>30 years</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Build Costs Tab -->
+            <div id="build-tab" class="tab-content">
+                <h2>Building Cost Details</h2>
+
+                <h3>Land Acquisition</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="land-cost">Land Purchase Price</label>
+                        <input type="number" id="land-cost" value="150000" min="0" step="5000">
+                    </div>
+                    <div class="form-group">
+                        <label for="land-down-payment">Land Down Payment (%)</label>
+                        <input type="number" id="land-down-payment" value="20" min="0" max="100" step="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="land-loan-rate">Land Loan Interest Rate (%)</label>
+                        <input type="number" id="land-loan-rate" value="8.0" min="0" max="20" step="0.125">
+                    </div>
+                </div>
+
+                <h3>Construction Costs</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="home-size">Home Size (sq ft)</label>
+                        <input type="number" id="home-size" value="2500" min="500" step="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="cost-per-sqft">Cost per Sq Ft</label>
+                        <input type="number" id="cost-per-sqft" value="200" min="50" step="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="construction-loan-rate">Construction Loan Rate (%)</label>
+                        <input type="number" id="construction-loan-rate" value="9.0" min="0" max="20" step="0.125">
+                    </div>
+                    <div class="form-group">
+                        <label for="construction-months">Construction Timeline (months)</label>
+                        <input type="number" id="construction-months" value="12" min="1" max="36" step="1">
+                    </div>
+                </div>
+
+                <h3>Professional Fees & Soft Costs</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="architect-fee">Architect Fee (% of construction)</label>
+                        <input type="number" id="architect-fee" value="10" min="0" max="20" step="0.5">
+                    </div>
+                    <div class="form-group">
+                        <label for="engineering-fee">Engineering Fees</label>
+                        <input type="number" id="engineering-fee" value="15000" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="lighting-design">Lighting Design</label>
+                        <input type="number" id="lighting-design" value="5000" min="0" step="500">
+                    </div>
+                    <div class="form-group">
+                        <label for="interior-design">Interior Design</label>
+                        <input type="number" id="interior-design" value="10000" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="landscape-design">Landscape Design</label>
+                        <input type="number" id="landscape-design" value="8000" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="other-consultants">Other Consultants</label>
+                        <input type="number" id="other-consultants" value="5000" min="0" step="1000">
+                    </div>
+                </div>
+
+                <h3>Permitting & Development</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="permitting-costs">Permitting & Approvals</label>
+                        <input type="number" id="permitting-costs" value="10000" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="land-development">Land Development Costs</label>
+                        <input type="number" id="land-development" value="50000" min="0" step="5000">
+                        <small>Grading, utilities, driveway, etc.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="impact-fees">Impact Fees</label>
+                        <input type="number" id="impact-fees" value="15000" min="0" step="1000">
+                    </div>
+                </div>
+
+                <h3>General Contractor & Contingency</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="gc-fee">GC Fee (% of construction)</label>
+                        <input type="number" id="gc-fee" value="15" min="0" max="30" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="contingency">Contingency (% of total)</label>
+                        <input type="number" id="contingency" value="10" min="0" max="25" step="1">
+                    </div>
+                </div>
+
+                <h3>Carry Costs During Construction</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="property-taxes-annual">Annual Property Tax (land)</label>
+                        <input type="number" id="property-taxes-annual" value="3000" min="0" step="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="insurance-during">Insurance During Construction</label>
+                        <input type="number" id="insurance-during" value="5000" min="0" step="500">
+                    </div>
+                    <div class="form-group">
+                        <label for="current-rent">Current Monthly Rent/Housing</label>
+                        <input type="number" id="current-rent" value="2500" min="0" step="100">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buy Option Tab -->
+            <div id="buy-tab" class="tab-content">
+                <h2>Buying an Existing Home</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="buy-price">Purchase Price</label>
+                        <input type="number" id="buy-price" value="600000" min="0" step="10000">
+                    </div>
+                    <div class="form-group">
+                        <label for="buy-size">Home Size (sq ft)</label>
+                        <input type="number" id="buy-size" value="2500" min="500" step="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="closing-costs">Closing Costs (%)</label>
+                        <input type="number" id="closing-costs" value="3" min="0" max="10" step="0.5">
+                    </div>
+                    <div class="form-group">
+                        <label for="renovation-costs">Immediate Renovation Costs</label>
+                        <input type="number" id="renovation-costs" value="50000" min="0" step="5000">
+                    </div>
+                    <div class="form-group">
+                        <label for="buy-property-tax-rate">Annual Property Tax Rate (%)</label>
+                        <input type="number" id="buy-property-tax-rate" value="1.2" min="0" max="5" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="buy-insurance-annual">Annual Insurance</label>
+                        <input type="number" id="buy-insurance-annual" value="2400" min="0" step="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="buy-hoa">Monthly HOA Fees</label>
+                        <input type="number" id="buy-hoa" value="0" min="0" step="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="buy-maintenance">Annual Maintenance (% of value)</label>
+                        <input type="number" id="buy-maintenance" value="1" min="0" max="5" step="0.1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Tab -->
+            <div id="results-tab" class="tab-content">
+                <h2>Analysis & Comparison</h2>
+
+                <div class="comparison-cards">
+                    <div class="result-card build-card">
+                        <h3>Build Option</h3>
+                        <div class="result-item">
+                            <span class="label">Total Project Cost:</span>
+                            <span class="value" id="build-total-cost">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Down Payment Needed:</span>
+                            <span class="value" id="build-down-needed">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Loan Amount:</span>
+                            <span class="value" id="build-loan-amount">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Monthly Payment (P&I):</span>
+                            <span class="value" id="build-monthly-pi">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Cost per Sq Ft:</span>
+                            <span class="value" id="build-cost-sqft">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Construction Carry Costs:</span>
+                            <span class="value" id="build-carry-costs">$0</span>
+                        </div>
+                    </div>
+
+                    <div class="result-card buy-card">
+                        <h3>Buy Option</h3>
+                        <div class="result-item">
+                            <span class="label">Total Purchase Cost:</span>
+                            <span class="value" id="buy-total-cost">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Down Payment Needed:</span>
+                            <span class="value" id="buy-down-needed">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Loan Amount:</span>
+                            <span class="value" id="buy-loan-amount">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Monthly Payment (P&I):</span>
+                            <span class="value" id="buy-monthly-pi">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Cost per Sq Ft:</span>
+                            <span class="value" id="buy-cost-sqft">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">First Year Total Costs:</span>
+                            <span class="value" id="buy-first-year">$0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="breakdown-section">
+                    <h3>Build Cost Breakdown</h3>
+                    <div id="build-breakdown"></div>
+                </div>
+
+                <div class="affordability-section">
+                    <h3>Affordability Analysis</h3>
+                    <div class="affordability-grid">
+                        <div class="affordability-item">
+                            <span class="label">Maximum Affordable Home (Build):</span>
+                            <span class="value" id="max-affordable-build">$0</span>
+                        </div>
+                        <div class="affordability-item">
+                            <span class="label">Maximum Affordable Home (Buy):</span>
+                            <span class="value" id="max-affordable-buy">$0</span>
+                        </div>
+                        <div class="affordability-item">
+                            <span class="label">Debt-to-Income Ratio (Build):</span>
+                            <span class="value" id="dti-build">0%</span>
+                        </div>
+                        <div class="affordability-item">
+                            <span class="label">Debt-to-Income Ratio (Buy):</span>
+                            <span class="value" id="dti-buy">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recommendation-section">
+                    <h3>Recommendation</h3>
+                    <div id="recommendation" class="recommendation-box"></div>
+                </div>
+
+                <div class="timeline-section">
+                    <h3>5-Year Cost Comparison</h3>
+                    <div id="timeline-chart"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-calculate" onclick="calculate()">Calculate</button>
+            <button class="btn btn-reset" onclick="resetForm()">Reset to Defaults</button>
+        </div>
+
+        <footer>
+            <p>This calculator provides estimates for comparison purposes only. Consult with financial and construction professionals for accurate project planning.</p>
+        </footer>
+    </div>
+
+    <script src="calculator.js"></script>
+</body>
+</html>
