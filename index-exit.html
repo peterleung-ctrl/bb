@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exit & Equity-Return Model</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Exit & Equity-Return Model</h1>
+            <p class="subtitle">Compare exit strategies: Sell, Refinance & Hold, or Long-Term/Short-Term Rental</p>
+        </header>
+
+        <div class="calculator-wrapper">
+            <!-- Tab Navigation -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('investment')">Initial Investment</button>
+                <button class="tab" onclick="switchTab('rental')">Rental Income</button>
+                <button class="tab" onclick="switchTab('exit')">Exit Scenarios</button>
+                <button class="tab" onclick="switchTab('results')">Results & IRR</button>
+            </div>
+
+            <!-- Initial Investment Tab -->
+            <div id="investment-tab" class="tab-content active">
+                <h2>Your Initial Investment</h2>
+
+                <h3>Project Costs</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="land-cost">Land Cost</label>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="land-cost" value="150000" min="0" step="5000"
+                                   title="What you paid for the land">
+                        </div>
+                        <small>Purchase price of land</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="soft-costs">Soft Costs</label>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="soft-costs" value="100000" min="0" step="5000"
+                                   title="Architect, engineering, design fees, permits">
+                        </div>
+                        <small>Architect, engineering, permits, design</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="hard-costs">Hard Costs</label>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="hard-costs" value="1000000" min="0" step="10000"
+                                   title="Actual construction costs">
+                        </div>
+                        <small>Construction costs</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="final-appraisal">Final Appraised Value</label>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="final-appraisal" value="1400000" min="0" step="10000"
+                                   title="Appraised value when construction complete">
+                        </div>
+                        <small>After-build appraised value</small>
+                    </div>
+                </div>
+
+                <h3>Financing Structure</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="total-equity">Total Equity Injected</label>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="total-equity" value="250000" min="0" step="5000"
+                                   title="Total cash you put into the project">
+                        </div>
+                        <small>Your total cash invested</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="loan-amount">Loan Amount</label>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="loan-amount" value="1000000" min="0" step="10000"
+                                   title="Total debt on the property">
+                        </div>
+                        <small>Total debt / mortgage</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="interest-rate">Interest Rate</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="interest-rate" value="7.0" min="0" max="20" step="0.125"
+                                   title="Current mortgage interest rate">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>Mortgage rate</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="loan-term">Loan Term</label>
+                        <select id="loan-term" title="Mortgage loan term">
+                            <option value="15">15 years</option>
+                            <option value="30" selected>30 years</option>
+                        </select>
+                        <small>Mortgage term</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="interest-only-years">Interest-Only Period</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="interest-only-years" value="0" min="0" max="10" step="1"
+                                   title="Years of interest-only payments before amortization">
+                            <span class="input-suffix">years</span>
+                        </div>
+                        <small>Interest-only period (0 = none)</small>
+                    </div>
+                </div>
+
+                <h3>Annual Holding Costs</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="property-tax">Property Tax (Annual)</label>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="property-tax" value="14000" min="0" step="500"
+                                   title="Annual property taxes">
+                        </div>
+                        <small>Annual property tax</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="insurance">Insurance (Annual)</label>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="insurance" value="3000" min="0" step="100"
+                                   title="Annual insurance premium">
+                        </div>
+                        <small>Annual insurance cost</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="maintenance">Maintenance (Annual)</label>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="maintenance" value="7000" min="0" step="500"
+                                   title="Annual maintenance and repairs. Typical: 0.5-1% of value">
+                        </div>
+                        <small>Annual maintenance budget</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="hoa">HOA Fees (Annual)</label>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="hoa" value="0" min="0" step="100"
+                                   title="Annual HOA or condo fees">
+                        </div>
+                        <small>HOA/Condo fees (if any)</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rental Income Tab -->
+            <div id="rental-tab" class="tab-content">
+                <h2>Rental Income Scenarios</h2>
+
+                <h3>Long-Term Rental (Traditional)</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="ltr-monthly-rent">Monthly Rent</label>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="ltr-monthly-rent" value="5000" min="0" step="100"
+                                   title="Monthly rent for long-term lease">
+                        </div>
+                        <small>Expected monthly rent</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="ltr-vacancy">Vacancy Rate</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="ltr-vacancy" value="5" min="0" max="50" step="1"
+                                   title="Expected vacancy rate. Typical: 5-10%">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>Expected vacancy %</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="ltr-mgmt-fee">Property Management</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="ltr-mgmt-fee" value="10" min="0" max="20" step="1"
+                                   title="Property management fee. Typical: 8-12% of rent">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>% of rent</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="ltr-rent-growth">Annual Rent Growth</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="ltr-rent-growth" value="3" min="0" max="10" step="0.5"
+                                   title="Expected annual rent increase. Typical: 2-4%">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>Rent increase per year</small>
+                    </div>
+                </div>
+
+                <h3>Short-Term Rental (Airbnb/VRBO)</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="str-daily-rate">Average Daily Rate (ADR)</label>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="str-daily-rate" value="350" min="0" step="10"
+                                   title="Average nightly rate">
+                        </div>
+                        <small>Nightly rate</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="str-occupancy">Occupancy Rate</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="str-occupancy" value="65" min="0" max="100" step="1"
+                                   title="Expected occupancy rate. Typical: 60-75%">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>Booked days %</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="str-cleaning">Cleaning Fee per Booking</label>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="str-cleaning" value="150" min="0" step="10"
+                                   title="Cleaning fee charged per stay">
+                        </div>
+                        <small>Per booking</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="str-avg-nights">Average Stay Length</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="str-avg-nights" value="3" min="1" max="30" step="1"
+                                   title="Average number of nights per booking">
+                            <span class="input-suffix">nights</span>
+                        </div>
+                        <small>Nights per booking</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="str-mgmt-fee">STR Management Fee</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="str-mgmt-fee" value="20" min="0" max="40" step="1"
+                                   title="Short-term rental management. Typical: 20-30%">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>% of revenue</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="str-utilities">Utilities (Annual)</label>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="str-utilities" value="6000" min="0" step="100"
+                                   title="Annual utilities cost (you pay for STR)">
+                        </div>
+                        <small>Electric, water, gas, wifi</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exit Scenarios Tab -->
+            <div id="exit-tab" class="tab-content">
+                <h2>Exit Strategy Options</h2>
+
+                <h3>General Assumptions</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="appreciation-rate">Annual Appreciation</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="appreciation-rate" value="4" min="0" max="20" step="0.5"
+                                   title="Expected annual property appreciation. Typical: 3-5%">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>Property value growth per year</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="exit-year">Exit Year</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="exit-year" value="5" min="1" max="30" step="1"
+                                   title="When do you plan to sell or refinance?">
+                            <span class="input-suffix">years</span>
+                        </div>
+                        <small>Years until exit</small>
+                    </div>
+                </div>
+
+                <h3>Scenario 1: Sell</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="selling-costs">Selling Costs</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="selling-costs" value="8" min="0" max="15" step="0.5"
+                                   title="Realtor commission + closing costs. Typical: 7-9%">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>Realtor + closing costs</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Cap Rate Valuation</label>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="checkbox" id="use-cap-rate" style="width: auto; margin: 0;">
+                            <label for="use-cap-rate" style="margin: 0; font-weight: normal;">
+                                Use Cap Rate for Sale Price
+                            </label>
+                        </div>
+                        <small>Price = NOI / Cap Rate</small>
+                    </div>
+                    <div class="form-group" id="cap-rate-field" style="display: none;">
+                        <label for="cap-rate">Cap Rate</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="cap-rate" value="5.5" min="1" max="15" step="0.25"
+                                   title="Market cap rate for sale price calculation">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>Market cap rate</small>
+                    </div>
+                </div>
+
+                <h3>Scenario 2: Refinance & Hold</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="refi-year">Refinance in Year</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="refi-year" value="3" min="1" max="30" step="1"
+                                   title="When will you refinance?">
+                            <span class="input-suffix">years</span>
+                        </div>
+                        <small>Year of refinance</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="refi-ltv">New LTV Ratio</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="refi-ltv" value="75" min="50" max="90" step="5"
+                                   title="Loan-to-value on refinance. Typical: 75-80%">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>% of appraised value</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="refi-rate">New Interest Rate</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="refi-rate" value="6.5" min="0" max="20" step="0.125"
+                                   title="New interest rate after refinance">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>New rate</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="refi-term">New Loan Term</label>
+                        <select id="refi-term" title="New loan term">
+                            <option value="15">15 years</option>
+                            <option value="30" selected>30 years</option>
+                        </select>
+                        <small>New term</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="refi-goal">Refinance Goal</label>
+                        <select id="refi-goal" title="What's your goal with the refinance?">
+                            <option value="cashout">Pull Cash Out</option>
+                            <option value="lower-payment">Lower Monthly Payment</option>
+                            <option value="both" selected>Both</option>
+                        </select>
+                        <small>Purpose of refinance</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Tab -->
+            <div id="results-tab" class="tab-content">
+                <h2>Exit Comparison & IRR Analysis</h2>
+
+                <!-- Summary Cards -->
+                <div class="comparison-cards">
+                    <div class="result-card">
+                        <h3>Scenario 1: Sell</h3>
+                        <div class="result-item">
+                            <span class="label">Exit Year:</span>
+                            <span class="value" id="sell-exit-year">Year 5</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Sale Price:</span>
+                            <span class="value" id="sell-price">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Net Proceeds:</span>
+                            <span class="value" id="sell-proceeds">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Total Profit:</span>
+                            <span class="value" id="sell-profit">$0</span>
+                        </div>
+                        <div class="result-item highlight">
+                            <span class="label">IRR:</span>
+                            <span class="value" id="sell-irr">0.0%</span>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>Scenario 2: Refi & Hold LTR</h3>
+                        <div class="result-item">
+                            <span class="label">Refinance Year:</span>
+                            <span class="value" id="refi-year-display">Year 3</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Cash Out:</span>
+                            <span class="value" id="refi-cashout">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">New Payment:</span>
+                            <span class="value" id="refi-payment">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Total Return:</span>
+                            <span class="value" id="refi-return">$0</span>
+                        </div>
+                        <div class="result-item highlight">
+                            <span class="label">IRR:</span>
+                            <span class="value" id="refi-irr">0.0%</span>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>Scenario 3: Hold LTR</h3>
+                        <div class="result-item">
+                            <span class="label">Monthly Cash Flow:</span>
+                            <span class="value" id="ltr-cashflow">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Annual Income:</span>
+                            <span class="value" id="ltr-annual">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Total Cash Flow:</span>
+                            <span class="value" id="ltr-total-cash">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Equity Growth:</span>
+                            <span class="value" id="ltr-equity">$0</span>
+                        </div>
+                        <div class="result-item highlight">
+                            <span class="label">IRR:</span>
+                            <span class="value" id="ltr-irr">0.0%</span>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>Scenario 4: Hold STR</h3>
+                        <div class="result-item">
+                            <span class="label">Monthly Cash Flow:</span>
+                            <span class="value" id="str-cashflow">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Annual Income:</span>
+                            <span class="value" id="str-annual">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Total Cash Flow:</span>
+                            <span class="value" id="str-total-cash">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Equity Growth:</span>
+                            <span class="value" id="str-equity">$0</span>
+                        </div>
+                        <div class="result-item highlight">
+                            <span class="label">IRR:</span>
+                            <span class="value" id="str-irr">0.0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Breakdown -->
+                <div class="breakdown-section">
+                    <h3>Year-by-Year Cash Flow</h3>
+                    <div id="cashflow-timeline"></div>
+                </div>
+
+                <!-- Recommendation -->
+                <div class="recommendation-box" id="recommendation">
+                    Click "Calculate" to see your exit strategy analysis
+                </div>
+
+                <button class="calculate-btn" onclick="calculate()">Calculate Exit Strategies</button>
+            </div>
+        </div>
+
+        <footer style="text-align: center; padding: 2rem; color: var(--text-secondary); font-size: 0.9rem;">
+            <p>Exit & Equity-Return Model | Investment Analysis Tool</p>
+        </footer>
+    </div>
+
+    <script src="calculator-exit.js"></script>
+</body>
+</html>
