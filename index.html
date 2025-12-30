@@ -173,6 +173,20 @@
                         <input type="number" id="current-rent" value="2500" min="0" step="100">
                     </div>
                 </div>
+
+                <h3>After-Build Valuation</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="after-build-value">Expected Market Value (After Completion)</label>
+                        <input type="number" id="after-build-value" value="750000" min="0" step="10000">
+                        <small>What do you expect the home to appraise for when complete?</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="min-equity-percent">Minimum Equity Target (%)</label>
+                        <input type="number" id="min-equity-percent" value="15" min="0" max="50" step="5">
+                        <small>Minimum equity position you want after completion</small>
+                    </div>
+                </div>
             </div>
 
             <!-- Buy Option Tab -->
@@ -217,6 +231,34 @@
             <!-- Results Tab -->
             <div id="results-tab" class="tab-content">
                 <h2>Analysis & Comparison</h2>
+
+                <!-- GO/NO-GO Dashboard -->
+                <div id="decision-dashboard" class="decision-dashboard">
+                    <div class="decision-indicator" id="decision-indicator">
+                        <div class="decision-icon">●</div>
+                        <div class="decision-text">
+                            <div class="decision-status" id="decision-status">CALCULATING...</div>
+                            <div class="decision-message" id="decision-message">Enter your details and calculate</div>
+                        </div>
+                    </div>
+                    <div class="decision-metrics" id="decision-metrics">
+                        <div class="metric">
+                            <div class="metric-label">Equity After Build</div>
+                            <div class="metric-value" id="equity-amount">$0</div>
+                            <div class="metric-subtext" id="equity-percent">0%</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Profit Potential</div>
+                            <div class="metric-value" id="profit-amount">$0</div>
+                            <div class="metric-subtext" id="cost-to-value-ratio">0% of value</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Financial Risk</div>
+                            <div class="metric-value" id="risk-level">LOW</div>
+                            <div class="metric-subtext" id="dti-summary">DTI within limits</div>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="comparison-cards">
                     <div class="result-card build-card">

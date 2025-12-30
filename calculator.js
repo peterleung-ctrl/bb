@@ -470,6 +470,96 @@ function createTimelineChart(buildResults, buyResults) {
     return chartHTML.join('');
 }
 
+// Calculate decision metrics and update dashboard
+function updateDecisionDashboard(buildResults, affordability) {
+    const afterBuildValue = getVal('after-build-value');
+    const minEquityPercent = getVal('min-equity-percent');
+    const buildDTI = calculateDTI(buildResults.monthlyPI);
+
+    // Calculate equity and profit
+    const totalCost = buildResults.totalProjectCost;
+    const equity = afterBuildValue - totalCost;
+    const equityPercent = (equity / afterBuildValue) * 100;
+    const costToValueRatio = (totalCost / afterBuildValue) * 100;
+
+    // Determine decision status
+    let decision = 'neutral';
+    let statusText = 'CALCULATING...';
+    let messageText = 'Enter your details and calculate';
+    let riskLevel = 'LOW';
+    let dtiSummary = 'DTI within limits';
+
+    // Decision logic thresholds
+    const issues = [];
+    const warnings = [];
+
+    // Check DTI
+    if (buildDTI > 43) {
+        issues.push('DTI exceeds 43%');
+        riskLevel = 'HIGH';
+        dtiSummary = `${formatPercent(buildDTI)} - Too High`;
+    } else if (buildDTI > 36) {
+        warnings.push('DTI above 36%');
+        riskLevel = 'MEDIUM';
+        dtiSummary = `${formatPercent(buildDTI)} - Moderate`;
+    } else {
+        dtiSummary = `${formatPercent(buildDTI)} - Excellent`;
+    }
+
+    // Check affordability
+    if (totalCost > affordability.maxHomePrice * 1.2) {
+        issues.push('Project cost far exceeds budget');
+    } else if (totalCost > affordability.maxHomePrice) {
+        warnings.push('Project cost exceeds recommended budget');
+    }
+
+    // Check equity position
+    if (equityPercent < 0) {
+        issues.push('Underwater - cost exceeds value');
+    } else if (equityPercent < minEquityPercent) {
+        warnings.push(`Equity below ${minEquityPercent}% target`);
+    }
+
+    // Check cost-to-value ratio
+    if (costToValueRatio > 100) {
+        issues.push('Building costs more than expected value');
+    } else if (costToValueRatio > 90) {
+        warnings.push('Building costs close to market value');
+    }
+
+    // Determine overall decision
+    if (issues.length > 0) {
+        decision = 'stop';
+        statusText = '🛑 WALK AWAY';
+        messageText = issues.join('. ') + '. This project is too risky.';
+    } else if (warnings.length > 0) {
+        decision = 'caution';
+        statusText = '⚠️ SCALE BACK';
+        messageText = warnings.join('. ') + '. Consider reducing scope or increasing budget.';
+    } else {
+        decision = 'go';
+        statusText = '✅ MOVE FORWARD';
+        messageText = 'All metrics look good. This project appears financially sound.';
+    }
+
+    // Update dashboard UI
+    const indicator = document.getElementById('decision-indicator');
+    indicator.className = 'decision-indicator ' + decision;
+
+    document.getElementById('decision-status').textContent = statusText;
+    document.getElementById('decision-message').textContent = messageText;
+
+    // Update metrics
+    setVal('equity-amount', equity);
+    document.getElementById('equity-percent').textContent = formatPercent(equityPercent) + ' equity';
+
+    setVal('profit-amount', equity);
+    document.getElementById('cost-to-value-ratio').textContent = formatPercent(costToValueRatio) + ' cost-to-value';
+
+    document.getElementById('risk-level').textContent = riskLevel;
+    document.getElementById('dti-summary').textContent = dtiSummary;
+}
+
 // Main calculate function
 function calculate() {
     const buildResults = calculateBuildCosts();
@@ -532,6 +622,9 @@ function calculate() {
 
     // Update Timeline Chart
     document.getElementById('timeline-chart').innerHTML = createTimelineChart(buildResults, buyResults);
+
+    // Update Decision Dashboard
+    updateDecisionDashboard(buildResults, affordability);
 
     // Switch to results tab
     switchTab('results');
