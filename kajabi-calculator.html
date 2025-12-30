@@ -1129,12 +1129,24 @@ footer {
                             <span class="label">Total Project Cost:</span>
                             <span class="value" id="build-total-cost">$0</span>
                         </div>
-                        <div class="result-item">
-                            <span class="label">Down Payment Needed:</span>
-                            <span class="value" id="build-down-needed">$0</span>
+                        <div class="result-item highlight">
+                            <span class="label">Required Down Payment (80% LTV):</span>
+                            <span class="value" id="build-required-down">$0</span>
                         </div>
                         <div class="result-item">
-                            <span class="label">Loan Amount:</span>
+                            <span class="label">Your Available Down Payment:</span>
+                            <span class="value" id="build-down-needed">$0</span>
+                        </div>
+                        <div class="result-item" id="cash-shortfall-row" style="display:none;">
+                            <span class="label" style="color: #ef4444;">💥 Cash Shortfall:</span>
+                            <span class="value" style="color: #ef4444; font-weight: 700;" id="build-cash-shortfall">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Max Loan Available (80% LTV):</span>
+                            <span class="value" id="build-max-loan">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Actual Loan Amount:</span>
                             <span class="value" id="build-loan-amount">$0</span>
                         </div>
                         <div class="result-item">
@@ -1315,61 +1327,144 @@ function calculateConstructionInterest(principal, annualRate, months) {
     return avgBalance * monthlyRate * months;
 }
 
+// Build cost calculations
 function calculateBuildCosts() {
+
+// Calculate loan principal from monthly payment (reverse calculation)
+function calculateLoanFromPayment(payment, annualRate, years) {
+    if (payment <= 0 || annualRate <= 0) return 0;
+
+    const monthlyRate = annualRate / 100 / 12;
+    const numPayments = years * 12;
+
+    return payment * (Math.pow(1 + monthlyRate, numPayments) - 1) /
+           (monthlyRate * Math.pow(1 + monthlyRate, numPayments));
+}
+
     const data = {
+        // Personal finances
         income: getVal('annual-income'),
         downPayment: getVal('down-payment'),
         monthlyDebts: getVal('monthly-debts'),
         interestRate: getVal('interest-rate'),
         loanTerm: getVal('loan-term'),
+
+        // Land
         landCost: getVal('land-cost'),
         landDownPercent: getVal('land-down-payment'),
         landLoanRate: getVal('land-loan-rate'),
+
+        // Construction
         homeSize: getVal('home-size'),
         costPerSqft: getVal('cost-per-sqft'),
         constructionLoanRate: getVal('construction-loan-rate'),
         constructionMonths: getVal('construction-months'),
+
+        // Professional fees
         architectFeePercent: getVal('architect-fee'),
         engineeringFee: getVal('engineering-fee'),
         lightingDesign: getVal('lighting-design'),
         interiorDesign: getVal('interior-design'),
         landscapeDesign: getVal('landscape-design'),
         otherConsultants: getVal('other-consultants'),
+
+        // Permitting & development
         permittingCosts: getVal('permitting-costs'),
         landDevelopment: getVal('land-development'),
         impactFees: getVal('impact-fees'),
+
+        // GC & contingency
         gcFeePercent: getVal('gc-fee'),
         contingencyPercent: getVal('contingency'),
+
+        // Carry costs
         propertyTaxAnnual: getVal('property-taxes-annual'),
         insuranceDuring: getVal('insurance-during'),
         currentRent: getVal('current-rent')
     };
 
+    // Calculate construction costs
     const baseConstructionCost = data.homeSize * data.costPerSqft;
     const architectFee = baseConstructionCost * (data.architectFeePercent / 100);
     const gcFee = baseConstructionCost * (data.gcFeePercent / 100);
-    const totalSoftCosts = architectFee + data.engineeringFee + data.lightingDesign + data.interiorDesign + data.landscapeDesign + data.otherConsultants;
+
+    // Total soft costs
+    const totalSoftCosts = architectFee + data.engineeringFee + data.lightingDesign +
+                          data.interiorDesign + data.landscapeDesign + data.otherConsultants;
+
+    // Total hard costs (construction + GC)
     const totalHardCosts = baseConstructionCost + gcFee;
+
+    // Development costs
     const totalDevelopmentCosts = data.permittingCosts + data.landDevelopment + data.impactFees;
+
+    // Subtotal before contingency
     const subtotal = data.landCost + totalHardCosts + totalSoftCosts + totalDevelopmentCosts;
+
+    // Contingency
     const contingency = subtotal * (data.contingencyPercent / 100);
+
+    // Total project cost
     const totalProjectCost = subtotal + contingency;
+
+    // Construction loan interest
     const constructionLoanAmount = totalHardCosts + totalSoftCosts + totalDevelopmentCosts + contingency;
-    const constructionInterest = calculateConstructionInterest(constructionLoanAmount, data.constructionLoanRate, data.constructionMonths);
+    const constructionInterest = calculateConstructionInterest(
+        constructionLoanAmount,
+        data.constructionLoanRate,
+        data.constructionMonths
+    );
+
+    // Carry costs during construction
     const propertyTaxDuringConstruction = (data.propertyTaxAnnual / 12) * data.constructionMonths;
     const rentDuringConstruction = data.currentRent * data.constructionMonths;
-    const totalCarryCosts = constructionInterest + propertyTaxDuringConstruction + data.insuranceDuring + rentDuringConstruction;
+    const totalCarryCosts = constructionInterest + propertyTaxDuringConstruction +
+                           data.insuranceDuring + rentDuringConstruction;
+
+    // Total cost including carry costs
     const totalCostWithCarry = totalProjectCost + totalCarryCosts;
+
+    // Land financing
     const landDownPayment = data.landCost * (data.landDownPercent / 100);
     const landLoanAmount = data.landCost - landDownPayment;
-    const finalLoanAmount = totalProjectCost - data.downPayment;
+
+    // Construction Loan LTV Limits (typically 80% LTV)
+    // Get the expected after-build value from the form
+    const afterBuildValue = getVal('after-build-value') || totalProjectCost;
+
+    // Maximum loan is 80% of LESSER of project cost or appraised value
+    const ltvLimit = 0.80;
+    const maxLoanableAmount = Math.min(totalProjectCost, afterBuildValue) * ltvLimit;
+
+    // Required down payment to meet LTV requirements
+    const requiredDownPayment = totalProjectCost - maxLoanableAmount;
+
+    // Check if user has sufficient down payment
+    const hasEnoughCash = data.downPayment >= requiredDownPayment;
+    const cashShortfall = Math.max(0, requiredDownPayment - data.downPayment);
+
+    // Final mortgage (convert construction loan to permanent)
+    // Use the ACTUAL loan amount they can get (limited by LTV)
+    const actualLoanAmount = hasEnoughCash ?
+        (totalProjectCost - data.downPayment) :
+        maxLoanableAmount;
+
+    const finalLoanAmount = actualLoanAmount;
     const monthlyPI = calculateMonthlyPayment(finalLoanAmount, data.interestRate, data.loanTerm);
+
+    // Cost per square foot
     const costPerSqft = totalProjectCost / data.homeSize;
 
     return {
         totalProjectCost,
         totalCostWithCarry,
         downPaymentNeeded: data.downPayment,
+        requiredDownPayment,
+        hasEnoughCash,
+        cashShortfall,
+        ltvLimit,
+        maxLoanableAmount,
+        afterBuildValue,
         landCost: data.landCost,
         baseConstructionCost,
         architectFee,
@@ -1401,220 +1496,6 @@ function calculateBuildCosts() {
             'Property Tax (During Construction)': propertyTaxDuringConstruction,
             'Insurance (During Construction)': data.insuranceDuring,
             'Housing During Construction': rentDuringConstruction
-        }
-    };
-}
-
-function calculateBuyCosts() {
-    const data = {
-        income: getVal('annual-income'),
-        downPayment: getVal('down-payment'),
-        monthlyDebts: getVal('monthly-debts'),
-        interestRate: getVal('interest-rate'),
-        loanTerm: getVal('loan-term'),
-        buyPrice: getVal('buy-price'),
-        buySize: getVal('buy-size'),
-        closingCostsPercent: getVal('closing-costs'),
-        renovationCosts: getVal('renovation-costs'),
-        propertyTaxRate: getVal('buy-property-tax-rate'),
-        insuranceAnnual: getVal('buy-insurance-annual'),
-        hoaMonthly: getVal('buy-hoa'),
-        maintenancePercent: getVal('buy-maintenance')
-    };
-
-    const closingCosts = data.buyPrice * (data.closingCostsPercent / 100);
-    const totalPurchaseCost = data.buyPrice + closingCosts + data.renovationCosts;
-    const loanAmount = data.buyPrice - data.downPayment;
-    const monthlyPI = calculateMonthlyPayment(loanAmount, data.interestRate, data.loanTerm);
-    const propertyTaxAnnual = data.buyPrice * (data.propertyTaxRate / 100);
-    const maintenanceAnnual = data.buyPrice * (data.maintenancePercent / 100);
-    const propertyTaxMonthly = propertyTaxAnnual / 12;
-    const insuranceMonthly = data.insuranceAnnual / 12;
-    const maintenanceMonthly = maintenanceAnnual / 12;
-    const totalMonthlyPayment = monthlyPI + propertyTaxMonthly + insuranceMonthly + data.hoaMonthly + maintenanceMonthly;
-    const firstYearCosts = (monthlyPI * 12) + propertyTaxAnnual + data.insuranceAnnual + (data.hoaMonthly * 12) + maintenanceAnnual + closingCosts + data.renovationCosts;
-    const costPerSqft = totalPurchaseCost / data.buySize;
-
-    return {
-        totalPurchaseCost,
-        downPaymentNeeded: data.downPayment,
-        loanAmount,
-        monthlyPI,
-        closingCosts,
-        propertyTaxAnnual,
-        insuranceAnnual: data.insuranceAnnual,
-        hoaMonthly: data.hoaMonthly,
-        maintenanceAnnual,
-        totalMonthlyPayment,
-        firstYearCosts,
-        costPerSqft
-    };
-}
-
-function calculateAffordability() {
-    const income = getVal('annual-income');
-    const monthlyDebts = getVal('monthly-debts');
-    const downPayment = getVal('down-payment');
-    const interestRate = getVal('interest-rate');
-    const loanTerm = getVal('loan-term');
-    const monthlyIncome = income / 12;
-    const maxHousingPayment = monthlyIncome * 0.28;
-    const maxTotalDebt = monthlyIncome * 0.36;
-    const maxHousingWithDebts = maxTotalDebt - monthlyDebts;
-    const maxMonthlyPayment = Math.min(maxHousingPayment, maxHousingWithDebts);
-    const monthlyRate = interestRate / 100 / 12;
-    const numPayments = loanTerm * 12;
-    const maxLoan = maxMonthlyPayment * (Math.pow(1 + monthlyRate, numPayments) - 1) / (monthlyRate * Math.pow(1 + monthlyRate, numPayments));
-    const maxHomePrice = maxLoan + downPayment;
-
-    return { maxHomePrice, maxMonthlyPayment, maxHousingPayment, maxHousingWithDebts };
-}
-
-function calculateDTI(monthlyHousingPayment) {
-    const monthlyIncome = getVal('annual-income') / 12;
-    const monthlyDebts = getVal('monthly-debts');
-    const totalMonthlyDebt = monthlyHousingPayment + monthlyDebts;
-    return (totalMonthlyDebt / monthlyIncome) * 100;
-}
-
-function generateRecommendation(buildResults, buyResults, affordability, compareMode) {
-    const income = getVal('annual-income');
-    const recommendations = [];
-
-    const buildDTI = calculateDTI(buildResults.monthlyPI);
-
-    // Build-only mode recommendations
-    if (!compareMode) {
-        // Affordability check
-        if (buildResults.totalProjectCost > affordability.maxHomePrice) {
-            recommendations.push(`⚠️ <strong>Project exceeds affordable range</strong> by ${formatCurrency(buildResults.totalProjectCost - affordability.maxHomePrice)}. Consider reducing scope or increasing down payment.`);
-        } else {
-            recommendations.push(`✅ <strong>Project is within your affordable range</strong> - Total cost of ${formatCurrency(buildResults.totalProjectCost)} is ${formatCurrency(affordability.maxHomePrice - buildResults.totalProjectCost)} below your maximum.`);
-        }
-
-        // DTI warnings
-        if (buildDTI > 43) {
-            recommendations.push(`⚠️ DTI of ${formatPercent(buildDTI)} exceeds recommended maximum of 43%. May be difficult to qualify for financing.`);
-        } else if (buildDTI > 36) {
-            recommendations.push(`⚠️ DTI of ${formatPercent(buildDTI)} is above 36%. You may qualify, but it's on the higher end.`);
-        } else {
-            recommendations.push(`✅ DTI of ${formatPercent(buildDTI)} is excellent - well within comfortable lending standards.`);
-        }
-
-        // Build-specific considerations
-        recommendations.push(`📊 <strong>Build Project Considerations:</strong>`);
-        recommendations.push(`• Total project cost including carry costs: ${formatCurrency(buildResults.totalCostWithCarry)}`);
-        recommendations.push(`• Monthly payment after completion: ${formatCurrency(buildResults.monthlyPI)}`);
-        recommendations.push(`• New home warranty, lower initial maintenance, fully customized to your preferences`);
-        recommendations.push(`• Energy-efficient construction will save on utilities long-term`);
-
-        // Final recommendation for build-only
-        const buildAffordable = buildResults.totalProjectCost <= affordability.maxHomePrice && buildDTI <= 43;
-        if (buildAffordable) {
-            recommendations.push(`<br><strong style="color: #10b981;">✅ AFFORDABLE - Proceed with confidence!</strong> Your build project fits comfortably within your financial capacity.`);
-        } else if (buildDTI <= 43 || buildResults.totalProjectCost <= affordability.maxHomePrice * 1.1) {
-            recommendations.push(`<br><strong style="color: #f59e0b;">⚠️ CAUTION - Proceed carefully</strong> - You're near your limits. Consider ways to reduce costs or increase your down payment.`);
-        } else {
-            recommendations.push(`<br><strong style="color: #ef4444;">❌ NOT AFFORDABLE</strong> - This project exceeds your budget. Reduce scope, increase down payment, or reconsider timing.`);
-        }
-
-        return recommendations.join('<br><br>');
-    }
-
-    // Compare mode recommendations (original logic)
-    const buyDTI = calculateDTI(buyResults.totalMonthlyPayment);
-
-    // Affordability check
-    if (buildResults.totalProjectCost > affordability.maxHomePrice) {
-        recommendations.push(`⚠️ <strong>Build option exceeds affordable range</strong> by ${formatCurrency(buildResults.totalProjectCost - affordability.maxHomePrice)}. Consider reducing scope or increasing down payment.`);
-    }
-
-    if (buyResults.totalPurchaseCost > affordability.maxHomePrice) {
-        recommendations.push(`⚠️ <strong>Buy option exceeds affordable range</strong> by ${formatCurrency(buyResults.totalPurchaseCost - affordability.maxHomePrice)}. Consider a lower-priced home.`);
-    }
-
-    // DTI warnings
-    if (buildDTI > 43) {
-        recommendations.push(`⚠️ Build option DTI of ${formatPercent(buildDTI)} exceeds recommended maximum of 43%. May be difficult to qualify for financing.`);
-    }
-
-    if (buyDTI > 43) {
-        recommendations.push(`⚠️ Buy option DTI of ${formatPercent(buyDTI)} exceeds recommended maximum of 43%. May be difficult to qualify for financing.`);
-    }
-
-    // Cost per square foot comparison
-    const costDifference = buildResults.costPerSqft - buyResults.costPerSqft;
-    if (Math.abs(costDifference) > 50) {
-        if (costDifference > 0) {
-            recommendations.push(`💰 Building costs ${formatCurrency(costDifference)} more per sq ft than buying. Consider if customization is worth the premium.`);
-        } else {
-            recommendations.push(`💰 Building costs ${formatCurrency(Math.abs(costDifference))} less per sq ft than buying. Good value for new construction!`);
-        }
-    }
-
-    // Total cost comparison
-    const totalCostDiff = buildResults.totalCostWithCarry - buyResults.firstYearCosts;
-    if (totalCostDiff < 0) {
-        recommendations.push(`✅ <strong>Building is more cost-effective</strong> by ${formatCurrency(Math.abs(totalCostDiff))} in first year costs. You'll get a brand new, custom home for less.`);
-    } else {
-        recommendations.push(`✅ <strong>Buying is more cost-effective</strong> by ${formatCurrency(totalCostDiff)} in first year costs. You can move in immediately without construction delays.`);
-    }
-
-    // Long-term considerations
-    recommendations.push(`📊 <strong>Long-term considerations:</strong>`);
-    recommendations.push(`• Building: New home warranty, lower maintenance costs initially, everything customized to your preferences, energy-efficient construction.`);
-    recommendations.push(`• Buying: Immediate occupancy, established neighborhood, mature landscaping, known condition (with inspection).`);
-
-    // Final recommendation
-    const buildAffordable = buildResults.totalProjectCost <= affordability.maxHomePrice && buildDTI <= 43;
-    const buyAffordable = buyResults.totalPurchaseCost <= affordability.maxHomePrice && buyDTI <= 43;
-
-    if (buildAffordable && !buyAffordable) {
-        recommendations.push(`<br><strong style="color: #2563eb;">Recommendation: BUILD</strong> - Building is within your budget while buying exceeds it.`);
-    } else if (buyAffordable && !buildAffordable) {
-        recommendations.push(`<br><strong style="color: #10b981;">Recommendation: BUY</strong> - Buying is within your budget while building exceeds it.`);
-    } else if (buildAffordable && buyAffordable) {
-        if (totalCostDiff < -50000) {
-            recommendations.push(`<br><strong style="color: #2563eb;">Recommendation: BUILD</strong> - Both options are affordable, but building offers better value and a custom home.`);
-        } else if (totalCostDiff > 50000) {
-            recommendations.push(`<br><strong style="color: #10b981;">Recommendation: BUY</strong> - Both options are affordable, but buying is more cost-effective and offers immediate occupancy.`);
-        } else {
-            recommendations.push(`<br><strong style="color: #f59e0b;">Recommendation: PERSONAL CHOICE</strong> - Both options are similarly affordable. Choose based on your preference for customization (build) vs. immediate occupancy (buy).`);
-        }
-    } else {
-        recommendations.push(`<br><strong style="color: #ef4444;">Warning: NEITHER OPTION IS AFFORDABLE</strong> - Both exceed your budget. Consider increasing your down payment, reducing scope, or looking at lower-priced options.`);
-    }
-
-    return recommendations.join('<br><br>');
-}
-
-// Create 5-year timeline visualization
-function createTimelineChart(buildResults, buyResults, compareMode) {
-    const chartHTML = [];
-
-    // Calculate 5-year costs for build
-    const buildMonthly = buildResults.monthlyPI;
-    const buildAnnual = buildMonthly * 12;
-    const buildInitial = buildResults.totalCostWithCarry;
-
-    // Build-only mode
-    if (!compareMode) {
-        const maxCost = Math.max(buildInitial, buildAnnual);
-
-        // Year 1 (Initial/First Year)
-        chartHTML.push(`
-            <div class="timeline-row">
-                <div class="timeline-label">Year 1</div>
-                <div class="timeline-bar-container">
-                    <div class="timeline-bar build" style="width: ${(buildInitial / maxCost) * 100}%">
-                        ${formatCurrency(buildInitial)}
-                    </div>
-                </div>
-            </div>
-        `);
-
-        // Years 2-5
-        for (let year = 2; year <= 5; year++) {
             chartHTML.push(`
                 <div class="timeline-row">
                     <div class="timeline-label">Year ${year}</div>
@@ -1720,10 +1601,23 @@ function createTimelineChart(buildResults, buyResults, compareMode) {
 
     return chartHTML.join('');
 }
+                        ${formatCurrency(buyTotal5Year)}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `);
+
+    return chartHTML.join('');
+}
+
+// Calculate decision metrics and update dashboard
 function updateDecisionDashboard(buildResults, affordability) {
     const afterBuildValue = getVal('after-build-value');
     const minEquityPercent = getVal('min-equity-percent');
     const buildDTI = calculateDTI(buildResults.monthlyPI);
+    const annualIncome = getVal('annual-income');
+    const monthlyDebts = getVal('monthly-debts');
 
     // Calculate equity and profit
     const totalCost = buildResults.totalProjectCost;
@@ -1741,50 +1635,92 @@ function updateDecisionDashboard(buildResults, affordability) {
     // Decision logic thresholds
     const issues = [];
     const warnings = [];
+    const solutions = [];
 
-    // Check DTI
+    // CRITICAL CHECK #1: Construction Loan LTV Limit (80%)
+    if (!buildResults.hasEnoughCash) {
+        const shortfall = buildResults.cashShortfall;
+        issues.push(`❌ INSUFFICIENT CASH: Need ${formatCurrency(buildResults.requiredDownPayment)} down payment (80% LTV limit) but only have ${formatCurrency(buildResults.downPaymentNeeded)}`);
+        solutions.push(`💡 Increase down payment by ${formatCurrency(shortfall)}`);
+
+        // Check if it's a low appraisal issue
+        if (buildResults.afterBuildValue < totalCost) {
+            const appraisalGap = totalCost - buildResults.afterBuildValue;
+            solutions.push(`💡 Increase appraised value by ${formatCurrency(appraisalGap)} (build in higher-value area, upgrade finishes)`);
+        }
+
+        // Suggest cost reduction
+        const costReduction = Math.ceil(shortfall / buildResults.ltvLimit);
+        solutions.push(`💡 Reduce project cost by ${formatCurrency(costReduction)} to lower required down payment`);
+        riskLevel = 'HIGH';
+    }
+
+    // CRITICAL CHECK #2: DTI (Debt-to-Income Ratio)
     if (buildDTI > 43) {
-        issues.push('DTI exceeds 43%');
+        const maxMonthlyPayment = (annualIncome / 12) * 0.43 - monthlyDebts;
+        const currentPayment = buildResults.monthlyPI;
+        const excessPayment = currentPayment - maxMonthlyPayment;
+
+        // Calculate how much income needed or debt reduction needed
+        const incomeNeeded = (excessPayment * 12) / 0.43;
+
+        // Calculate how much loan reduction needed
+        const loanReduction = calculateLoanFromPayment(excessPayment, getVal('interest-rate'), getVal('loan-term'));
+
+        issues.push(`❌ INCOME INSUFFICIENT: DTI of ${formatPercent(buildDTI)} exceeds lender limit of 43%`);
+        solutions.push(`💡 Increase annual income by ${formatCurrency(incomeNeeded)}`);
+        solutions.push(`💡 Pay off ${formatCurrency(excessPayment)}/month in existing debts`);
+        solutions.push(`💡 Reduce loan by ${formatCurrency(loanReduction)} (smaller home or higher down payment)`);
         riskLevel = 'HIGH';
         dtiSummary = `${formatPercent(buildDTI)} - Too High`;
     } else if (buildDTI > 36) {
-        warnings.push('DTI above 36%');
+        warnings.push('⚠️ DTI above 36% - on the higher end of acceptable range');
         riskLevel = 'MEDIUM';
         dtiSummary = `${formatPercent(buildDTI)} - Moderate`;
     } else {
         dtiSummary = `${formatPercent(buildDTI)} - Excellent`;
     }
 
-    // Check affordability
-    if (totalCost > affordability.maxHomePrice * 1.2) {
-        issues.push('Project cost far exceeds budget');
-    } else if (totalCost > affordability.maxHomePrice) {
-        warnings.push('Project cost exceeds recommended budget');
-    }
-
-    // Check equity position
-    if (equityPercent < 0) {
-        issues.push('Underwater - cost exceeds value');
-    } else if (equityPercent < minEquityPercent) {
-        warnings.push(`Equity below ${minEquityPercent}% target`);
-    }
-
-    // Check cost-to-value ratio
+    // CRITICAL CHECK #3: Appraised Value vs Cost
     if (costToValueRatio > 100) {
-        issues.push('Building costs more than expected value');
+        const overbuilt = totalCost - afterBuildValue;
+        issues.push(`❌ LOW APPRAISED VALUE: Building costs ${formatCurrency(totalCost)} but appraises at only ${formatCurrency(afterBuildValue)}`);
+        solutions.push(`💡 Increase expected market value to at least ${formatCurrency(totalCost)} (build in different area/neighborhood)`);
+        solutions.push(`💡 Reduce construction costs by ${formatCurrency(overbuilt)} to match market value`);
     } else if (costToValueRatio > 90) {
-        warnings.push('Building costs close to market value');
+        warnings.push(`⚠️ Cost-to-value ratio of ${formatPercent(costToValueRatio)} is tight - limited equity cushion`);
+    }
+
+    // CHECK #4: Overall affordability
+    if (totalCost > affordability.maxHomePrice * 1.2) {
+        const excessCost = totalCost - affordability.maxHomePrice;
+        issues.push(`❌ PROJECT TOO EXPENSIVE: Cost of ${formatCurrency(totalCost)} far exceeds affordable range of ${formatCurrency(affordability.maxHomePrice)}`);
+        solutions.push(`💡 Reduce project scope by ${formatCurrency(excessCost)}`);
+    } else if (totalCost > affordability.maxHomePrice) {
+        warnings.push(`⚠️ Project cost slightly exceeds recommended budget`);
+    }
+
+    // CHECK #5: Equity position
+    if (equityPercent < 0) {
+        issues.push(`❌ UNDERWATER: Will owe more than home is worth`);
+    } else if (equityPercent < minEquityPercent) {
+        const equityShortfall = (minEquityPercent - equityPercent) / 100 * afterBuildValue;
+        warnings.push(`⚠️ Equity of ${formatPercent(equityPercent)} below ${minEquityPercent}% target`);
+        solutions.push(`💡 Increase appraised value by ${formatCurrency(equityShortfall)} or reduce costs to hit equity target`);
     }
 
     // Determine overall decision
     if (issues.length > 0) {
         decision = 'stop';
-        statusText = '🛑 WALK AWAY';
-        messageText = issues.join('. ') + '. This project is too risky.';
+        statusText = '🛑 NOT FEASIBLE';
+        messageText = issues.join('<br>') + '<br><br><strong>How to make it work:</strong><br>' + solutions.join('<br>');
     } else if (warnings.length > 0) {
         decision = 'caution';
-        statusText = '⚠️ SCALE BACK';
-        messageText = warnings.join('. ') + '. Consider reducing scope or increasing budget.';
+        statusText = '⚠️ PROCEED CAREFULLY';
+        messageText = warnings.join('<br>');
+        if (solutions.length > 0) {
+            messageText += '<br><br><strong>Consider:</strong><br>' + solutions.join('<br>');
+        }
     } else {
         decision = 'go';
         statusText = '✅ MOVE FORWARD';
@@ -1796,7 +1732,7 @@ function updateDecisionDashboard(buildResults, affordability) {
     indicator.className = 'decision-indicator ' + decision;
 
     document.getElementById('decision-status').textContent = statusText;
-    document.getElementById('decision-message').textContent = messageText;
+    document.getElementById('decision-message').innerHTML = messageText;
 
     // Update metrics
     setVal('equity-amount', equity);
@@ -1809,6 +1745,7 @@ function updateDecisionDashboard(buildResults, affordability) {
     document.getElementById('dti-summary').textContent = dtiSummary;
 }
 
+// Main calculate function
 function calculate() {
     const compareMode = document.getElementById('compare-mode').checked;
     const buildResults = calculateBuildCosts();
@@ -1817,11 +1754,22 @@ function calculate() {
 
     // Update Build Results
     setVal('build-total-cost', buildResults.totalProjectCost);
+    setVal('build-required-down', buildResults.requiredDownPayment);
     setVal('build-down-needed', buildResults.downPaymentNeeded);
+    setVal('build-max-loan', buildResults.maxLoanableAmount);
     setVal('build-loan-amount', buildResults.finalLoanAmount);
     setVal('build-monthly-pi', buildResults.monthlyPI);
     setVal('build-cost-sqft', buildResults.costPerSqft);
     setVal('build-carry-costs', buildResults.totalCarryCosts);
+
+    // Show/hide cash shortfall warning
+    const shortfallRow = document.getElementById('cash-shortfall-row');
+    if (buildResults.cashShortfall > 0) {
+        shortfallRow.style.display = 'flex';
+        setVal('build-cash-shortfall', buildResults.cashShortfall);
+    } else {
+        shortfallRow.style.display = 'none';
+    }
 
     // Update Buy Results (only if in compare mode)
     if (compareMode && buyResults) {
@@ -1890,6 +1838,16 @@ function calculate() {
     // Switch to results tab
     switchTab('results');
 }
+
+// Reset form to defaults
+function resetForm() {
+    if (confirm('Reset all values to defaults?')) {
+        location.reload();
+    }
+}
+
+// Calculate on load with default values
+window.addEventListener('load', () => {
 
 function resetForm() {
     if (confirm('Reset all values to defaults?')) {
