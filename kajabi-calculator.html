@@ -773,13 +773,49 @@ footer {
                         <small>Length of mortgage repayment</small>
                     </div>
                 </div>
+
+<h3>Monthly Cash Flow (for Savings During Construction)</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="monthly-take-home">Monthly Take-Home Pay</label>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="monthly-take-home" value="9000" min="0" step="100"
+                                   title="After-tax monthly income. Typical: 70-75% of gross monthly income">
+                        </div>
+                        <small>After taxes, health insurance, 401k, etc.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="monthly-expenses">Monthly Living Expenses</label>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="monthly-expenses" value="6000" min="0" step="100"
+                                   title="Total monthly expenses including housing, food, utilities, insurance, etc. Typical: 60-80% of take-home">
+                        </div>
+                        <small>Housing, food, utilities, insurance, etc.</small>
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <small style="color: var(--text-secondary); font-style: italic;">
+                            💡 Monthly savings = Take-home - Expenses - Debts. This can help cover costs during construction.
+                        </small>
+                    </div>
+                </div>
             </div>
 
             <div id="build-tab" class="tab-content">
                 <h2>Building Cost Details</h2>
 
-                <h3>Land Acquisition</h3>
+                                <h3>Land Acquisition</h3>
                 <div class="form-grid">
+                    <div class="form-group">
+                        <label for="already-own-land">
+                            <input type="checkbox" id="already-own-land" style="width: auto; margin-right: 0.5rem;">
+                            I Already Own the Land
+                        </label>
+                        <small>Check if you don't need to purchase land</small>
+                    </div>
+                </div>
+                <div class="form-grid" id="land-purchase-fields">
                     <div class="form-group">
                         <label for="land-cost">Land Purchase Price</label>
                         <div class="input-wrapper has-prefix">
@@ -829,14 +865,10 @@ footer {
                         </div>
                         <small>Budget: $150-250 | Mid: $250-400 | Luxury: $400+</small>
                     </div>
-                    <div class="form-group">
-                        <label for="construction-loan-rate">Construction Loan Rate</label>
-                        <div class="input-wrapper has-suffix">
-                            <input type="number" id="construction-loan-rate" value="9.0" min="0" max="20" step="0.125"
-                                   title="Construction loan interest rate. Typical: 2-3% higher than mortgages (8-11%). Short-term only.">
-                            <span class="input-suffix">%</span>
-                        </div>
-                        <small>Higher than mortgage rates, but temporary</small>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <small style="color: var(--text-secondary); font-style: italic;">
+                            💡 Note: Modern construction loans use single-close structure - same rate as your permanent mortgage during construction, converts automatically when complete
+                        </small>
                     </div>
                     <div class="form-group">
                         <label for="construction-months">Construction Timeline</label>
@@ -904,6 +936,10 @@ footer {
                                    title="Geotechnical, environmental, energy consultants, etc. Typical: $3,000-$10,000">
                         </div>
                         <small>Geotech, environmental, energy | $3k-$10k</small>
+                                        <div class="form-group" style="grid-column: 1 / -1; background: #fef3c7; padding: 1rem; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                        <small style="color: #92400e; font-weight: 600;">
+                            ⚠️ IMPORTANT: Soft costs (architect, engineering, design fees) typically must be paid from YOUR CASH, not financed by construction loan. Budget accordingly!
+                        </small>
                     </div>
                 </div>
 
@@ -1287,7 +1323,16 @@ document.addEventListener('DOMContentLoaded', function() {
         compareModeToggle.addEventListener('change', updateCalculatorMode);
         updateCalculatorMode(); // Set initial state
     }
-});
+
+    // Handle "Already Own Land" checkbox toggle
+    const ownLandCheckbox = document.getElementById('already-own-land');
+    if (ownLandCheckbox) {
+        ownLandCheckbox.addEventListener('change', function() {
+            const landFields = document.getElementById('land-purchase-fields');
+            if (landFields) {
+                landFields.style.display = this.checked ? 'none' : 'grid';
+            }
+        });
 
 function getVal(id) {
     return parseFloat(document.getElementById(id).value) || 0;
@@ -1328,18 +1373,195 @@ function calculateConstructionInterest(principal, annualRate, months) {
 }
 
 // Build cost calculations
+// Build cost calculations
 function calculateBuildCosts() {
+    // Check if user already owns land
+    const alreadyOwnLand = document.getElementById('already-own-land')?.checked || false;
 
-// Calculate loan principal from monthly payment (reverse calculation)
-function calculateLoanFromPayment(payment, annualRate, years) {
-    if (payment <= 0 || annualRate <= 0) return 0;
+    const data = {
+        // Personal finances
+        income: getVal('annual-income'),
+        downPayment: getVal('down-payment'),
+        monthlyDebts: getVal('monthly-debts'),
+        interestRate: getVal('interest-rate'),
+        loanTerm: getVal('loan-term'),
+        monthlyTakeHome: getVal('monthly-take-home'),
+        monthlyExpenses: getVal('monthly-expenses'),
 
-    const monthlyRate = annualRate / 100 / 12;
-    const numPayments = years * 12;
+        // Land (set to 0 if already owned)
+        landCost: alreadyOwnLand ? 0 : getVal('land-cost'),
+        landDownPercent: getVal('land-down-payment'),
+        landLoanRate: getVal('land-loan-rate'),
+        alreadyOwnLand: alreadyOwnLand,
 
-    return payment * (Math.pow(1 + monthlyRate, numPayments) - 1) /
-           (monthlyRate * Math.pow(1 + monthlyRate, numPayments));
+        // Construction (use mortgage rate for construction loan)
+        homeSize: getVal('home-size'),
+        costPerSqft: getVal('cost-per-sqft'),
+        constructionMonths: getVal('construction-months'),
+
+        // Professional fees (SOFT COSTS - must be paid from cash)
+        architectFeePercent: getVal('architect-fee'),
+        engineeringFee: getVal('engineering-fee'),
+        lightingDesign: getVal('lighting-design'),
+        interiorDesign: getVal('interior-design'),
+        landscapeDesign: getVal('landscape-design'),
+        otherConsultants: getVal('other-consultants'),
+
+        // Permitting & development
+        permittingCosts: getVal('permitting-costs'),
+        landDevelopment: getVal('land-development'),
+        impactFees: getVal('impact-fees'),
+
+        // GC & contingency
+        gcFeePercent: getVal('gc-fee'),
+        contingencyPercent: getVal('contingency'),
+
+        // Carry costs
+        propertyTaxAnnual: getVal('property-taxes-annual'),
+        insuranceDuring: getVal('insurance-during'),
+        currentRent: getVal('current-rent')
+    };
+
+    // Calculate construction costs
+    const baseConstructionCost = data.homeSize * data.costPerSqft;
+    const architectFee = baseConstructionCost * (data.architectFeePercent / 100);
+    const gcFee = baseConstructionCost * (data.gcFeePercent / 100);
+
+    // SOFT COSTS (must be paid from cash, NOT financed)
+    const totalSoftCosts = architectFee + data.engineeringFee + data.lightingDesign +
+                          data.interiorDesign + data.landscapeDesign + data.otherConsultants;
+
+    // HARD COSTS (can be financed - construction + GC)
+    const totalHardCosts = baseConstructionCost + gcFee;
+
+    // DEVELOPMENT COSTS (can be financed)
+    const totalDevelopmentCosts = data.permittingCosts + data.landDevelopment + data.impactFees;
+
+    // FINANCEABLE COSTS (hard costs + development, excludes soft costs)
+    const financeableSubtotal = totalHardCosts + totalDevelopmentCosts;
+
+    // Contingency (applied to financeable costs only)
+    const contingency = financeableSubtotal * (data.contingencyPercent / 100);
+
+    // Total FINANCEABLE amount (what bank will lend on)
+    const totalFinanceableAmount = financeableSubtotal + contingency;
+
+    // Total PROJECT cost (includes soft costs)
+    const totalProjectCost = data.landCost + totalHardCosts + totalSoftCosts + totalDevelopmentCosts + contingency;
+
+    // Construction loan interest (use mortgage rate for single-close loans)
+    // Only finance hard costs + development + contingency (NOT soft costs)
+    const constructionInterest = calculateConstructionInterest(
+        totalFinanceableAmount,
+        data.interestRate,  // Use mortgage rate, not separate construction rate
+        data.constructionMonths
+    );
+
+    // Carry costs during construction
+    const propertyTaxDuringConstruction = (data.propertyTaxAnnual / 12) * data.constructionMonths;
+    const rentDuringConstruction = data.currentRent * data.constructionMonths;
+    const totalCarryCosts = constructionInterest + propertyTaxDuringConstruction +
+                           data.insuranceDuring + rentDuringConstruction;
+
+    // Total cost including carry costs
+    const totalCostWithCarry = totalProjectCost + totalCarryCosts;
+
+    // Monthly savings available during construction
+    const monthlySavings = Math.max(0, data.monthlyTakeHome - data.monthlyExpenses - data.monthlyDebts);
+    const totalSavingsDuringConstruction = monthlySavings * data.constructionMonths;
+
+    // Total cash available = initial down payment + savings during construction
+    const totalCashAvailable = data.downPayment + totalSavingsDuringConstruction;
+
+    // Land financing (if not already owned)
+    const landDownPayment = data.alreadyOwnLand ? 0 : (data.landCost * (data.landDownPercent / 100));
+    const landLoanAmount = data.alreadyOwnLand ? 0 : (data.landCost - landDownPayment);
+
+    // Construction Loan LTV Limits (typically 80% LTV)
+    // Get the expected after-build value from the form
+    const afterBuildValue = getVal('after-build-value') || totalProjectCost;
+
+    // Maximum loan is 80% of LESSER of financeable amount or appraised value
+    const ltvLimit = 0.80;
+    const maxLoanableAmount = Math.min(totalFinanceableAmount, afterBuildValue) * ltvLimit;
+
+    // CASH REQUIREMENTS breakdown:
+    // 1. Soft costs (MUST be paid from cash, not financed)
+    const cashForSoftCosts = totalSoftCosts;
+
+    // 2. Down payment on financeable amount (20% of hard costs + dev + contingency)
+    const downPaymentOnFinanceable = totalFinanceableAmount - maxLoanableAmount;
+
+    // 3. Land down payment (if not owned)
+    const cashForLand = landDownPayment;
+
+    // Total REQUIRED cash = soft costs + down payment on financeable + land down payment
+    const requiredCashTotal = cashForSoftCosts + downPaymentOnFinanceable + cashForLand;
+
+    // Check if user has sufficient cash (including savings during construction)
+    const hasEnoughCash = totalCashAvailable >= requiredCashTotal;
+    const cashShortfall = Math.max(0, requiredCashTotal - totalCashAvailable);
+
+    // Final mortgage (convert construction loan to permanent)
+    // Loan amount is limited by 80% LTV on financeable costs
+    const finalLoanAmount = maxLoanableAmount;
+    const monthlyPI = calculateMonthlyPayment(finalLoanAmount, data.interestRate, data.loanTerm);
+
+    // Cost per square foot
+    const costPerSqft = totalProjectCost / data.homeSize;
+
+    return {
+        totalProjectCost,
+        totalCostWithCarry,
+        downPaymentNeeded: data.downPayment,
+        requiredDownPayment: requiredCashTotal,  // Total cash required
+        monthlySavings,
+        totalSavingsDuringConstruction,
+        totalCashAvailable,
+        cashForSoftCosts,
+        cashForLand,
+        alreadyOwnLand: data.alreadyOwnLand,
+        hasEnoughCash,
+        cashShortfall,
+        ltvLimit,
+        maxLoanableAmount,
+        totalFinanceableAmount,
+        afterBuildValue,
+        landCost: data.landCost,
+        baseConstructionCost,
+        architectFee,
+        gcFee,
+        totalSoftCosts,
+        totalHardCosts,
+        totalDevelopmentCosts,
+        contingency,
+        constructionInterest,
+        totalCarryCosts,
+        finalLoanAmount,
+        monthlyPI,
+        costPerSqft,
+        breakdown: {
+            'Land Acquisition': data.landCost,
+            'Base Construction': baseConstructionCost,
+            'Architect Fees': architectFee,
+            'GC Fees': gcFee,
+            'Engineering': data.engineeringFee,
+            'Lighting Design': data.lightingDesign,
+            'Interior Design': data.interiorDesign,
+            'Landscape Design': data.landscapeDesign,
+            'Other Consultants': data.otherConsultants,
+            'Permitting': data.permittingCosts,
+            'Land Development': data.landDevelopment,
+            'Impact Fees': data.impactFees,
+            'Contingency': contingency,
+            'Construction Loan Interest': constructionInterest,
+            'Property Tax (During Construction)': propertyTaxDuringConstruction,
+            'Insurance (During Construction)': data.insuranceDuring,
+            'Housing During Construction': rentDuringConstruction
+        }
+    };
 }
+
 
     const data = {
         // Personal finances
@@ -1637,11 +1859,29 @@ function updateDecisionDashboard(buildResults, affordability) {
     const warnings = [];
     const solutions = [];
 
-    // CRITICAL CHECK #1: Construction Loan LTV Limit (80%)
+    // CRITICAL CHECK #1: Cash Requirements (Soft Costs + Down Payment + Land)
     if (!buildResults.hasEnoughCash) {
         const shortfall = buildResults.cashShortfall;
-        issues.push(`❌ INSUFFICIENT CASH: Need ${formatCurrency(buildResults.requiredDownPayment)} down payment (80% LTV limit) but only have ${formatCurrency(buildResults.downPaymentNeeded)}`);
-        solutions.push(`💡 Increase down payment by ${formatCurrency(shortfall)}`);
+        const totalCashNeeded = buildResults.requiredDownPayment;
+        const totalCashAvailable = buildResults.totalCashAvailable;
+
+        // Break down cash requirements for clarity
+        let cashBreakdown = `Need ${formatCurrency(totalCashNeeded)} total cash:`;
+        cashBreakdown += `<br>• Soft costs (architect, engineering, design): ${formatCurrency(buildResults.cashForSoftCosts)} [MUST BE CASH]`;
+        cashBreakdown += `<br>• Down payment (20% of ${formatCurrency(buildResults.totalFinanceableAmount)}): ${formatCurrency(totalCashNeeded - buildResults.cashForSoftCosts - buildResults.cashForLand)}`;
+        if (buildResults.cashForLand > 0) {
+            cashBreakdown += `<br>• Land down payment: ${formatCurrency(buildResults.cashForLand)}`;
+        }
+        cashBreakdown += `<br><br>You have ${formatCurrency(totalCashAvailable)} available (${formatCurrency(buildResults.downPaymentNeeded)} initial + ${formatCurrency(buildResults.totalSavingsDuringConstruction)} saved during construction)`;
+
+        issues.push(`❌ INSUFFICIENT CASH: ${cashBreakdown}`);
+        solutions.push(`💡 Increase initial down payment by ${formatCurrency(shortfall)}`);
+
+        // Suggest increasing monthly savings
+        if (buildResults.monthlySavings > 0) {
+            const additionalMonthlySavingsNeeded = Math.ceil(shortfall / getVal('construction-months'));
+            solutions.push(`💡 Increase monthly savings by ${formatCurrency(additionalMonthlySavingsNeeded)}/month during construction`);
+        }
 
         // Check if it's a low appraisal issue
         if (buildResults.afterBuildValue < totalCost) {
@@ -1650,8 +1890,7 @@ function updateDecisionDashboard(buildResults, affordability) {
         }
 
         // Suggest cost reduction
-        const costReduction = Math.ceil(shortfall / buildResults.ltvLimit);
-        solutions.push(`💡 Reduce project cost by ${formatCurrency(costReduction)} to lower required down payment`);
+        solutions.push(`💡 Reduce soft costs by ${formatCurrency(Math.min(shortfall, buildResults.cashForSoftCosts))} (simpler finishes, DIY some design work)`);
         riskLevel = 'HIGH';
     }
 
