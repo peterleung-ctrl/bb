@@ -164,6 +164,41 @@ h3::before {
     margin-top: 0.25rem;
 }
 
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-prefix,
+.input-suffix {
+    position: absolute;
+    color: var(--text-secondary);
+    font-weight: 500;
+    pointer-events: none;
+    font-size: 1rem;
+}
+
+.input-prefix {
+    left: 0.75rem;
+}
+
+.input-suffix {
+    right: 0.75rem;
+}
+
+.input-wrapper input {
+    flex: 1;
+}
+
+.input-wrapper.has-prefix input {
+    padding-left: 2rem;
+}
+
+.input-wrapper.has-suffix input {
+    padding-right: 2.5rem;
+}
+
 .form-group input,
 .form-group select {
     padding: 0.75rem;

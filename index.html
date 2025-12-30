@@ -28,35 +28,57 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="annual-income">Annual Household Income</label>
-                        <input type="number" id="annual-income" value="150000" min="0" step="1000">
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="annual-income" value="150000" min="0" step="1000"
+                                   title="Your total household income before taxes. Typical range: $75,000-$500,000">
+                        </div>
+                        <small>Combined income of all earners in household</small>
                     </div>
                     <div class="form-group">
                         <label for="down-payment">Available Down Payment</label>
-                        <input type="number" id="down-payment" value="100000" min="0" step="1000">
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="down-payment" value="100000" min="0" step="1000"
+                                   title="Cash you have available for down payment. Typical: 10-30% of total project cost">
+                        </div>
+                        <small>Cash on hand for the project</small>
                     </div>
                     <div class="form-group">
                         <label for="monthly-debts">Monthly Debt Payments</label>
-                        <input type="number" id="monthly-debts" value="500" min="0" step="50">
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="monthly-debts" value="500" min="0" step="50"
+                                   title="Total monthly debt payments: car loans, student loans, credit cards, etc. Typical: $200-$2,000">
+                        </div>
+                        <small>Car loans, student loans, credit cards, etc.</small>
                     </div>
                     <div class="form-group">
                         <label for="credit-score">Credit Score</label>
-                        <select id="credit-score">
+                        <select id="credit-score" title="Your credit score affects interest rates. Higher scores get better rates.">
                             <option value="760">Excellent (760+)</option>
                             <option value="700">Good (700-759)</option>
                             <option value="660">Fair (660-699)</option>
                             <option value="620">Poor (620-659)</option>
                         </select>
+                        <small>Affects your interest rate qualification</small>
                     </div>
                     <div class="form-group">
-                        <label for="interest-rate">Mortgage Interest Rate (%)</label>
-                        <input type="number" id="interest-rate" value="7.0" min="0" max="20" step="0.125">
+                        <label for="interest-rate">Mortgage Interest Rate</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="interest-rate" value="7.0" min="0" max="20" step="0.125"
+                                   title="Current mortgage rate you can qualify for. As of 2025: 6.5-8.5% typical. Check with lender.">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>Check current rates with your lender</small>
                     </div>
                     <div class="form-group">
-                        <label for="loan-term">Loan Term (years)</label>
-                        <select id="loan-term">
+                        <label for="loan-term">Loan Term</label>
+                        <select id="loan-term" title="30-year: lower monthly payment. 15-year: higher monthly payment, less total interest.">
                             <option value="15">15 years</option>
                             <option value="30" selected>30 years</option>
                         </select>
+                        <small>Length of mortgage repayment</small>
                     </div>
                 </div>
             </div>
@@ -69,63 +91,128 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="land-cost">Land Purchase Price</label>
-                        <input type="number" id="land-cost" value="150000" min="0" step="5000">
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="land-cost" value="150000" min="0" step="5000"
+                                   title="Cost to purchase the land. Typical: $50,000-$500,000 depending on location and size">
+                        </div>
+                        <small>Price of the lot/property</small>
                     </div>
                     <div class="form-group">
-                        <label for="land-down-payment">Land Down Payment (%)</label>
-                        <input type="number" id="land-down-payment" value="20" min="0" max="100" step="5">
+                        <label for="land-down-payment">Land Down Payment</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="land-down-payment" value="20" min="0" max="100" step="5"
+                                   title="Down payment for land loan. Typical: 20-50%. Higher down payment = lower monthly cost">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>Percent you'll pay upfront for land</small>
                     </div>
                     <div class="form-group">
-                        <label for="land-loan-rate">Land Loan Interest Rate (%)</label>
-                        <input type="number" id="land-loan-rate" value="8.0" min="0" max="20" step="0.125">
+                        <label for="land-loan-rate">Land Loan Interest Rate</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="land-loan-rate" value="8.0" min="0" max="20" step="0.125"
+                                   title="Interest rate for land-only loans. Typical: 1-2% higher than mortgage rates (7-10%)">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>Usually higher than home mortgage rates</small>
                     </div>
                 </div>
 
                 <h3>Construction Costs</h3>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="home-size">Home Size (sq ft)</label>
-                        <input type="number" id="home-size" value="2500" min="500" step="100">
+                        <label for="home-size">Home Size</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="home-size" value="2500" min="500" step="100"
+                                   title="Total finished square footage. Typical: 1,500-4,000 sq ft. Average new home: 2,500 sq ft">
+                            <span class="input-suffix">sq ft</span>
+                        </div>
+                        <small>Total finished square footage</small>
                     </div>
                     <div class="form-group">
                         <label for="cost-per-sqft">Cost per Sq Ft</label>
-                        <input type="number" id="cost-per-sqft" value="200" min="50" step="10">
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="cost-per-sqft" value="400" min="50" step="10"
+                                   title="Hard construction cost per sq ft. Budget: $150-250, Mid-range: $250-400, High-end: $400-600+">
+                        </div>
+                        <small>Budget: $150-250 | Mid: $250-400 | Luxury: $400+</small>
                     </div>
                     <div class="form-group">
-                        <label for="construction-loan-rate">Construction Loan Rate (%)</label>
-                        <input type="number" id="construction-loan-rate" value="9.0" min="0" max="20" step="0.125">
+                        <label for="construction-loan-rate">Construction Loan Rate</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="construction-loan-rate" value="9.0" min="0" max="20" step="0.125"
+                                   title="Construction loan interest rate. Typical: 2-3% higher than mortgages (8-11%). Short-term only.">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>Higher than mortgage rates, but temporary</small>
                     </div>
                     <div class="form-group">
-                        <label for="construction-months">Construction Timeline (months)</label>
-                        <input type="number" id="construction-months" value="12" min="1" max="36" step="1">
+                        <label for="construction-months">Construction Timeline</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="construction-months" value="12" min="1" max="36" step="1"
+                                   title="Months to complete construction. Typical: 10-16 months. Custom/complex: 18-24+ months">
+                            <span class="input-suffix">months</span>
+                        </div>
+                        <small>Typical: 12-16 months for custom home</small>
                     </div>
                 </div>
 
                 <h3>Professional Fees & Soft Costs</h3>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="architect-fee">Architect Fee (% of construction)</label>
-                        <input type="number" id="architect-fee" value="10" min="0" max="20" step="0.5">
+                        <label for="architect-fee">Architect Fee</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="architect-fee" value="10" min="0" max="20" step="0.5"
+                                   title="Architect fees as % of construction cost. Typical: 8-15%. Complex/custom designs: 12-20%">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>Typical: 8-15% of construction cost</small>
                     </div>
                     <div class="form-group">
                         <label for="engineering-fee">Engineering Fees</label>
-                        <input type="number" id="engineering-fee" value="15000" min="0" step="1000">
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="engineering-fee" value="15000" min="0" step="1000"
+                                   title="Structural, civil, MEP engineering. Typical: $10,000-$30,000. Complex sites/designs cost more">
+                        </div>
+                        <small>Structural, civil, MEP | Typical: $10k-$30k</small>
                     </div>
                     <div class="form-group">
                         <label for="lighting-design">Lighting Design</label>
-                        <input type="number" id="lighting-design" value="5000" min="0" step="500">
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="lighting-design" value="5000" min="0" step="500"
+                                   title="Professional lighting design. Optional. Typical: $3,000-$10,000. High-end: $15,000+">
+                        </div>
+                        <small>Optional | Typical: $3k-$10k</small>
                     </div>
                     <div class="form-group">
                         <label for="interior-design">Interior Design</label>
-                        <input type="number" id="interior-design" value="10000" min="0" step="1000">
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="interior-design" value="10000" min="0" step="1000"
+                                   title="Interior design services. Optional. Typical: $5,000-$25,000. Full-service: $50,000+">
+                        </div>
+                        <small>Optional | Typical: $5k-$25k</small>
                     </div>
                     <div class="form-group">
                         <label for="landscape-design">Landscape Design</label>
-                        <input type="number" id="landscape-design" value="8000" min="0" step="1000">
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="landscape-design" value="8000" min="0" step="1000"
+                                   title="Landscape architecture and design. Typical: $5,000-$15,000. Extensive: $20,000+">
+                        </div>
+                        <small>Typical: $5k-$15k | Extensive: $20k+</small>
                     </div>
                     <div class="form-group">
                         <label for="other-consultants">Other Consultants</label>
-                        <input type="number" id="other-consultants" value="5000" min="0" step="1000">
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="other-consultants" value="5000" min="0" step="1000"
+                                   title="Geotechnical, environmental, energy consultants, etc. Typical: $3,000-$10,000">
+                        </div>
+                        <small>Geotech, environmental, energy | $3k-$10k</small>
                     </div>
                 </div>
 
@@ -133,28 +220,52 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="permitting-costs">Permitting & Approvals</label>
-                        <input type="number" id="permitting-costs" value="10000" min="0" step="1000">
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="permitting-costs" value="10000" min="0" step="1000"
+                                   title="Building permits, inspections, plan reviews. Typical: $5,000-$20,000. Varies by location">
+                        </div>
+                        <small>Building permits, plan reviews | $5k-$20k</small>
                     </div>
                     <div class="form-group">
                         <label for="land-development">Land Development Costs</label>
-                        <input type="number" id="land-development" value="50000" min="0" step="5000">
-                        <small>Grading, utilities, driveway, etc.</small>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="land-development" value="50000" min="0" step="5000"
+                                   title="Site work: grading, utilities, driveway, drainage. Typical: $30,000-$100,000+. Varies by site">
+                        </div>
+                        <small>Grading, utilities, driveway | $30k-$100k+</small>
                     </div>
                     <div class="form-group">
                         <label for="impact-fees">Impact Fees</label>
-                        <input type="number" id="impact-fees" value="15000" min="0" step="1000">
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="impact-fees" value="15000" min="0" step="1000"
+                                   title="Municipality fees for schools, roads, water/sewer. Typical: $5,000-$30,000. Varies greatly by location">
+                        </div>
+                        <small>Schools, roads, utilities | $5k-$30k</small>
                     </div>
                 </div>
 
                 <h3>General Contractor & Contingency</h3>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="gc-fee">GC Fee (% of construction)</label>
-                        <input type="number" id="gc-fee" value="15" min="0" max="30" step="1">
+                        <label for="gc-fee">GC Fee</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="gc-fee" value="15" min="0" max="30" step="1"
+                                   title="General Contractor markup. Typical: 15-20%. Includes overhead & profit. Complex projects: 20-25%">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>Typical: 15-20% of construction cost</small>
                     </div>
                     <div class="form-group">
-                        <label for="contingency">Contingency (% of total)</label>
-                        <input type="number" id="contingency" value="10" min="0" max="25" step="1">
+                        <label for="contingency">Contingency</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="contingency" value="10" min="0" max="25" step="1"
+                                   title="Budget reserve for unexpected costs. Typical: 10-15%. First build: 15-20%. Complex: 20%+">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>Reserve for unexpected costs | 10-15%</small>
                     </div>
                 </div>
 
@@ -162,15 +273,30 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="property-taxes-annual">Annual Property Tax (land)</label>
-                        <input type="number" id="property-taxes-annual" value="3000" min="0" step="100">
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="property-taxes-annual" value="3000" min="0" step="100"
+                                   title="Annual property tax on land only (pre-construction). Typical: 1-2% of land value per year">
+                        </div>
+                        <small>Tax on vacant land during build</small>
                     </div>
                     <div class="form-group">
                         <label for="insurance-during">Insurance During Construction</label>
-                        <input type="number" id="insurance-during" value="5000" min="0" step="500">
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="insurance-during" value="5000" min="0" step="500"
+                                   title="Builder's risk insurance during construction. Typical: $3,000-$8,000 for 12-month build">
+                        </div>
+                        <small>Builder's risk policy | $3k-$8k/year</small>
                     </div>
                     <div class="form-group">
                         <label for="current-rent">Current Monthly Rent/Housing</label>
-                        <input type="number" id="current-rent" value="2500" min="0" step="100">
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="current-rent" value="2500" min="0" step="100"
+                                   title="Your current housing cost while building. Rent or existing mortgage. You'll pay this during construction">
+                        </div>
+                        <small>You'll continue paying this during build</small>
                     </div>
                 </div>
 
@@ -178,13 +304,21 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="after-build-value">Expected Market Value (After Completion)</label>
-                        <input type="number" id="after-build-value" value="750000" min="0" step="10000">
-                        <small>What do you expect the home to appraise for when complete?</small>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="after-build-value" value="750000" min="0" step="10000"
+                                   title="What you expect the completed home to appraise for. Compare to similar new homes in area">
+                        </div>
+                        <small>Compare to similar new homes in your area</small>
                     </div>
                     <div class="form-group">
-                        <label for="min-equity-percent">Minimum Equity Target (%)</label>
-                        <input type="number" id="min-equity-percent" value="15" min="0" max="50" step="5">
-                        <small>Minimum equity position you want after completion</small>
+                        <label for="min-equity-percent">Minimum Equity Target</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="min-equity-percent" value="15" min="0" max="50" step="5"
+                                   title="Minimum equity % you want after completion. Conservative: 20%+. Moderate: 15%. Aggressive: 10%">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>Conservative: 20%+ | Moderate: 15%</small>
                     </div>
                 </div>
             </div>
@@ -195,35 +329,75 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="buy-price">Purchase Price</label>
-                        <input type="number" id="buy-price" value="600000" min="0" step="10000">
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="buy-price" value="600000" min="0" step="10000"
+                                   title="Purchase price of the home. Use comparable sales in your area">
+                        </div>
+                        <small>Compare to recent sales in area</small>
                     </div>
                     <div class="form-group">
-                        <label for="buy-size">Home Size (sq ft)</label>
-                        <input type="number" id="buy-size" value="2500" min="500" step="100">
+                        <label for="buy-size">Home Size</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="buy-size" value="2500" min="500" step="100"
+                                   title="Total finished square footage of the home">
+                            <span class="input-suffix">sq ft</span>
+                        </div>
+                        <small>Finished square footage</small>
                     </div>
                     <div class="form-group">
-                        <label for="closing-costs">Closing Costs (%)</label>
-                        <input type="number" id="closing-costs" value="3" min="0" max="10" step="0.5">
+                        <label for="closing-costs">Closing Costs</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="closing-costs" value="3" min="0" max="10" step="0.5"
+                                   title="Closing costs as % of purchase price. Typical: 2-5%. Includes title, escrow, lender fees">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>Typical: 2-5% of purchase price</small>
                     </div>
                     <div class="form-group">
                         <label for="renovation-costs">Immediate Renovation Costs</label>
-                        <input type="number" id="renovation-costs" value="50000" min="0" step="5000">
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="renovation-costs" value="50000" min="0" step="5000"
+                                   title="Repairs and updates needed right away. Typical: $10,000-$100,000 depending on condition">
+                        </div>
+                        <small>Repairs/updates needed immediately</small>
                     </div>
                     <div class="form-group">
-                        <label for="buy-property-tax-rate">Annual Property Tax Rate (%)</label>
-                        <input type="number" id="buy-property-tax-rate" value="1.2" min="0" max="5" step="0.1">
+                        <label for="buy-property-tax-rate">Annual Property Tax Rate</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="buy-property-tax-rate" value="1.2" min="0" max="5" step="0.1"
+                                   title="Property tax rate as % of home value. Typical: 0.5-2.5%. Check your county's rate">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>Check your county rate | 0.5-2.5%</small>
                     </div>
                     <div class="form-group">
-                        <label for="buy-insurance-annual">Annual Insurance</label>
-                        <input type="number" id="buy-insurance-annual" value="2400" min="0" step="100">
+                        <label for="buy-insurance-annual">Annual Homeowners Insurance</label>
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="buy-insurance-annual" value="2400" min="0" step="100"
+                                   title="Annual homeowners insurance. Typical: $1,000-$4,000. Higher in disaster-prone areas">
+                        </div>
+                        <small>Typical: $1k-$4k/year</small>
                     </div>
                     <div class="form-group">
                         <label for="buy-hoa">Monthly HOA Fees</label>
-                        <input type="number" id="buy-hoa" value="0" min="0" step="50">
+                        <div class="input-wrapper has-prefix">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="buy-hoa" value="0" min="0" step="50"
+                                   title="Monthly Homeowners Association fees. Typical: $100-$500. Condos/townhomes: $200-$800">
+                        </div>
+                        <small>$0 if no HOA | Typical: $100-$500</small>
                     </div>
                     <div class="form-group">
-                        <label for="buy-maintenance">Annual Maintenance (% of value)</label>
-                        <input type="number" id="buy-maintenance" value="1" min="0" max="5" step="0.1">
+                        <label for="buy-maintenance">Annual Maintenance</label>
+                        <div class="input-wrapper has-suffix">
+                            <input type="number" id="buy-maintenance" value="1" min="0" max="5" step="0.1"
+                                   title="Annual maintenance as % of home value. Typical: 1-2%. Older homes: 2-3%">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <small>Typical: 1-2% | Older homes: 2-3%</small>
                     </div>
                 </div>
             </div>

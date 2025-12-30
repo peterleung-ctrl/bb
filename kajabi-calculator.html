@@ -168,6 +168,41 @@ h3::before {
     margin-top: 0.25rem;
 }
 
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-prefix,
+.input-suffix {
+    position: absolute;
+    color: var(--text-secondary);
+    font-weight: 500;
+    pointer-events: none;
+    font-size: 1rem;
+}
+
+.input-prefix {
+    left: 0.75rem;
+}
+
+.input-suffix {
+    right: 0.75rem;
+}
+
+.input-wrapper input {
+    flex: 1;
+}
+
+.input-wrapper.has-prefix input {
+    padding-left: 2rem;
+}
+
+.input-wrapper.has-suffix input {
+    padding-right: 2.5rem;
+}
+
 .form-group input,
 .form-group select {
     padding: 0.75rem;
@@ -661,7 +696,7 @@ footer {
                     </div>
                     <div class="form-group">
                         <label for="cost-per-sqft">Cost per Sq Ft</label>
-                        <input type="number" id="cost-per-sqft" value="200" min="50" step="10">
+                        <input type="number" id="cost-per-sqft" value="400" min="50" step="10">
                     </div>
                     <div class="form-group">
                         <label for="construction-loan-rate">Construction Loan Rate (%)</label>
