@@ -16,6 +16,43 @@ function switchTab(tabName) {
     document.getElementById(`${tabName}-tab`).classList.add('active');
 }
 
+// Calculator mode toggle functionality
+function updateCalculatorMode() {
+    const compareMode = document.getElementById('compare-mode').checked;
+    const buyTab = Array.from(document.querySelectorAll('.tab')).find(tab =>
+        tab.textContent.toLowerCase().includes('buy')
+    );
+    const modeTitle = document.getElementById('mode-title');
+    const modeDescription = document.getElementById('mode-description');
+
+    if (compareMode) {
+        // Show Buy tab
+        if (buyTab) buyTab.style.display = 'block';
+        modeTitle.textContent = 'Compare Buy vs Build';
+        modeDescription.textContent = 'Toggle off for Build-Only affordability calculator';
+    } else {
+        // Hide Buy tab
+        if (buyTab) buyTab.style.display = 'none';
+        modeTitle.textContent = 'Build-Only Mode';
+        modeDescription.textContent = 'Toggle on to compare with buying existing home';
+
+        // If currently on Buy tab, switch to Personal tab
+        const buyTabContent = document.getElementById('buy-tab');
+        if (buyTabContent && buyTabContent.classList.contains('active')) {
+            switchTab('personal');
+        }
+    }
+}
+
+// Initialize calculator mode on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const compareModeToggle = document.getElementById('compare-mode');
+    if (compareModeToggle) {
+        compareModeToggle.addEventListener('change', updateCalculatorMode);
+        updateCalculatorMode(); // Set initial state
+    }
+});
+
 // Utility functions
 function getVal(id) {
     return parseFloat(document.getElementById(id).value) || 0;
@@ -312,11 +349,51 @@ function calculateDTI(monthlyHousingPayment) {
 }
 
 // Generate recommendation
-function generateRecommendation(buildResults, buyResults, affordability) {
+function generateRecommendation(buildResults, buyResults, affordability, compareMode) {
     const income = getVal('annual-income');
     const recommendations = [];
 
     const buildDTI = calculateDTI(buildResults.monthlyPI);
+
+    // Build-only mode recommendations
+    if (!compareMode) {
+        // Affordability check
+        if (buildResults.totalProjectCost > affordability.maxHomePrice) {
+            recommendations.push(`⚠️ <strong>Project exceeds affordable range</strong> by ${formatCurrency(buildResults.totalProjectCost - affordability.maxHomePrice)}. Consider reducing scope or increasing down payment.`);
+        } else {
+            recommendations.push(`✅ <strong>Project is within your affordable range</strong> - Total cost of ${formatCurrency(buildResults.totalProjectCost)} is ${formatCurrency(affordability.maxHomePrice - buildResults.totalProjectCost)} below your maximum.`);
+        }
+
+        // DTI warnings
+        if (buildDTI > 43) {
+            recommendations.push(`⚠️ DTI of ${formatPercent(buildDTI)} exceeds recommended maximum of 43%. May be difficult to qualify for financing.`);
+        } else if (buildDTI > 36) {
+            recommendations.push(`⚠️ DTI of ${formatPercent(buildDTI)} is above 36%. You may qualify, but it's on the higher end.`);
+        } else {
+            recommendations.push(`✅ DTI of ${formatPercent(buildDTI)} is excellent - well within comfortable lending standards.`);
+        }
+
+        // Build-specific considerations
+        recommendations.push(`📊 <strong>Build Project Considerations:</strong>`);
+        recommendations.push(`• Total project cost including carry costs: ${formatCurrency(buildResults.totalCostWithCarry)}`);
+        recommendations.push(`• Monthly payment after completion: ${formatCurrency(buildResults.monthlyPI)}`);
+        recommendations.push(`• New home warranty, lower initial maintenance, fully customized to your preferences`);
+        recommendations.push(`• Energy-efficient construction will save on utilities long-term`);
+
+        // Final recommendation for build-only
+        const buildAffordable = buildResults.totalProjectCost <= affordability.maxHomePrice && buildDTI <= 43;
+        if (buildAffordable) {
+            recommendations.push(`<br><strong style="color: #10b981;">✅ AFFORDABLE - Proceed with confidence!</strong> Your build project fits comfortably within your financial capacity.`);
+        } else if (buildDTI <= 43 || buildResults.totalProjectCost <= affordability.maxHomePrice * 1.1) {
+            recommendations.push(`<br><strong style="color: #f59e0b;">⚠️ CAUTION - Proceed carefully</strong> - You're near your limits. Consider ways to reduce costs or increase your down payment.`);
+        } else {
+            recommendations.push(`<br><strong style="color: #ef4444;">❌ NOT AFFORDABLE</strong> - This project exceeds your budget. Reduce scope, increase down payment, or reconsider timing.`);
+        }
+
+        return recommendations.join('<br><br>');
+    }
+
+    // Compare mode recommendations (original logic)
     const buyDTI = calculateDTI(buyResults.totalMonthlyPayment);
 
     // Affordability check
@@ -384,20 +461,66 @@ function generateRecommendation(buildResults, buyResults, affordability) {
 }
 
 // Create 5-year timeline visualization
-function createTimelineChart(buildResults, buyResults) {
+function createTimelineChart(buildResults, buyResults, compareMode) {
     const chartHTML = [];
 
-    // Calculate 5-year costs for both options
+    // Calculate 5-year costs for build
     const buildMonthly = buildResults.monthlyPI;
-    const buyMonthly = buyResults.totalMonthlyPayment;
-
     const buildAnnual = buildMonthly * 12;
-    const buyAnnual = buyMonthly * 12;
-
-    // Add initial costs for year 0
     const buildInitial = buildResults.totalCostWithCarry;
-    const buyInitial = buyResults.firstYearCosts;
 
+    // Build-only mode
+    if (!compareMode) {
+        const maxCost = Math.max(buildInitial, buildAnnual);
+
+        // Year 1 (Initial/First Year)
+        chartHTML.push(`
+            <div class="timeline-row">
+                <div class="timeline-label">Year 1</div>
+                <div class="timeline-bar-container">
+                    <div class="timeline-bar build" style="width: ${(buildInitial / maxCost) * 100}%">
+                        ${formatCurrency(buildInitial)}
+                    </div>
+                </div>
+            </div>
+        `);
+
+        // Years 2-5
+        for (let year = 2; year <= 5; year++) {
+            chartHTML.push(`
+                <div class="timeline-row">
+                    <div class="timeline-label">Year ${year}</div>
+                    <div class="timeline-bar-container">
+                        <div class="timeline-bar build" style="width: ${(buildAnnual / maxCost) * 100}%">
+                            ${formatCurrency(buildAnnual)}
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+
+        // Cumulative total
+        const buildTotal5Year = buildInitial + (buildAnnual * 4);
+        chartHTML.push(`
+            <div style="margin-top: 2rem; padding-top: 1rem; border-top: 2px solid #e2e8f0;">
+                <div class="timeline-row">
+                    <div class="timeline-label"><strong>5-Year Total</strong></div>
+                    <div class="timeline-bar-container">
+                        <div class="timeline-bar build" style="width: 100%">
+                            ${formatCurrency(buildTotal5Year)}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
+
+        return chartHTML.join('');
+    }
+
+    // Compare mode - show both build and buy
+    const buyMonthly = buyResults.totalMonthlyPayment;
+    const buyAnnual = buyMonthly * 12;
+    const buyInitial = buyResults.firstYearCosts;
     const maxCost = Math.max(buildInitial, buyInitial, buildAnnual, buyAnnual);
 
     // Year 0 (Initial/First Year)
@@ -562,8 +685,9 @@ function updateDecisionDashboard(buildResults, affordability) {
 
 // Main calculate function
 function calculate() {
+    const compareMode = document.getElementById('compare-mode').checked;
     const buildResults = calculateBuildCosts();
-    const buyResults = calculateBuyCosts();
+    const buyResults = compareMode ? calculateBuyCosts() : null;
     const affordability = calculateAffordability();
 
     // Update Build Results
@@ -574,19 +698,25 @@ function calculate() {
     setVal('build-cost-sqft', buildResults.costPerSqft);
     setVal('build-carry-costs', buildResults.totalCarryCosts);
 
-    // Update Buy Results
-    setVal('buy-total-cost', buyResults.totalPurchaseCost);
-    setVal('buy-down-needed', buyResults.downPaymentNeeded);
-    setVal('buy-loan-amount', buyResults.loanAmount);
-    setVal('buy-monthly-pi', buyResults.monthlyPI);
-    setVal('buy-cost-sqft', buyResults.costPerSqft);
-    setVal('buy-first-year', buyResults.firstYearCosts);
+    // Update Buy Results (only if in compare mode)
+    if (compareMode && buyResults) {
+        setVal('buy-total-cost', buyResults.totalPurchaseCost);
+        setVal('buy-down-needed', buyResults.downPaymentNeeded);
+        setVal('buy-loan-amount', buyResults.loanAmount);
+        setVal('buy-monthly-pi', buyResults.monthlyPI);
+        setVal('buy-cost-sqft', buyResults.costPerSqft);
+        setVal('buy-first-year', buyResults.firstYearCosts);
+    }
 
     // Update Affordability
     setVal('max-affordable-build', affordability.maxHomePrice);
-    setVal('max-affordable-buy', affordability.maxHomePrice);
+    if (compareMode) {
+        setVal('max-affordable-buy', affordability.maxHomePrice);
+    }
     setVal('dti-build', formatPercent(calculateDTI(buildResults.monthlyPI)));
-    setVal('dti-buy', formatPercent(calculateDTI(buyResults.totalMonthlyPayment)));
+    if (compareMode && buyResults) {
+        setVal('dti-buy', formatPercent(calculateDTI(buyResults.totalMonthlyPayment)));
+    }
 
     // Update Breakdown
     let breakdownHTML = '';
@@ -602,29 +732,35 @@ function calculate() {
     document.getElementById('build-breakdown').innerHTML = breakdownHTML;
 
     // Update Recommendation
-    const recommendation = generateRecommendation(buildResults, buyResults, affordability);
+    const recommendation = generateRecommendation(buildResults, buyResults, affordability, compareMode);
     const recommendationBox = document.getElementById('recommendation');
     recommendationBox.innerHTML = recommendation;
 
     // Set recommendation box style based on content
     const buildDTI = calculateDTI(buildResults.monthlyPI);
-    const buyDTI = calculateDTI(buyResults.totalMonthlyPayment);
-    if (buildDTI > 43 || buyDTI > 43 ||
+    const buyDTI = compareMode && buyResults ? calculateDTI(buyResults.totalMonthlyPayment) : 0;
+    if (buildDTI > 43 || (compareMode && buyDTI > 43) ||
         buildResults.totalProjectCost > affordability.maxHomePrice * 1.2 ||
-        buyResults.totalPurchaseCost > affordability.maxHomePrice * 1.2) {
+        (compareMode && buyResults && buyResults.totalPurchaseCost > affordability.maxHomePrice * 1.2)) {
         recommendationBox.className = 'recommendation-box danger';
     } else if (buildResults.totalProjectCost > affordability.maxHomePrice ||
-               buyResults.totalPurchaseCost > affordability.maxHomePrice) {
+               (compareMode && buyResults && buyResults.totalPurchaseCost > affordability.maxHomePrice)) {
         recommendationBox.className = 'recommendation-box warning';
     } else {
         recommendationBox.className = 'recommendation-box';
     }
 
     // Update Timeline Chart
-    document.getElementById('timeline-chart').innerHTML = createTimelineChart(buildResults, buyResults);
+    document.getElementById('timeline-chart').innerHTML = createTimelineChart(buildResults, buyResults, compareMode);
 
     // Update Decision Dashboard
     updateDecisionDashboard(buildResults, affordability);
+
+    // Show/hide buy comparison card
+    const buyCard = document.querySelector('.buy-card');
+    if (buyCard) {
+        buyCard.style.display = compareMode ? 'block' : 'none';
+    }
 
     // Switch to results tab
     switchTab('results');
